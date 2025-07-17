@@ -23,7 +23,6 @@ load_dotenv()
 title = os.getenv("TITLE", "CAHMS Neurodevelopmental Assessment Tool")
 logo = os.getenv("LOGO_URL", "images/msft_logo.png")
 
-feedback_endpoint = os.getenv("FEEDBACK_ENDPOINT")
 
 # Configure which uploads are mandatory
 # This can be customized based on organizational requirements
@@ -101,76 +100,87 @@ col1, col2 = st.columns(2)
 with col1:
     # Form S Container
     with st.container(border=True):
-        st.markdown("### Form S")
+        optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["form_s"] else ""
+        st.markdown(f"### Form S{optional_text}")
         st.markdown("The purpose of Form S is to gather school information for a CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Assessment. It aims to understand the strategies and support provided to the child or young person, and why this support is necessary, to better comprehend their neurodevelopmental needs.")
+        upload_label = "Upload Form S" + ("" if MANDATORY_UPLOADS["form_s"] else " (Optional)")
         form_s = st.file_uploader(
-            "Upload Form S",
+            upload_label,
             type=['pdf', 'doc', 'docx', 'txt'],
             key="form_s_uploader",
-            help="Upload Form S document"
+            help="Upload Form S document" + ("" if MANDATORY_UPLOADS["form_s"] else " (optional)")
         )
     
     # Form A Container
     with st.container(border=True):
-        st.markdown("### Form A")
+        optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["form_a"] else ""
+        st.markdown(f"### Form A{optional_text}")
         st.markdown("The purpose of Form A is to gather school information for a CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Assessment. It aims to understand the young person's social interactions, communication skills, and any restricted or repetitive behaviours.")
+        upload_label = "Upload Form A" + ("" if MANDATORY_UPLOADS["form_a"] else " (Optional)")
         form_a = st.file_uploader(
-            "Upload Form A",
+            upload_label,
             type=['pdf', 'doc', 'docx', 'txt'],
             key="form_a_uploader",
-            help="Upload Form A document"
+            help="Upload Form A document" + ("" if MANDATORY_UPLOADS["form_a"] else " (optional)")
         )
     
     # Neuro Dev History Container
     with st.container(border=True):
-        st.markdown("### Neuro Dev History")
+        optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["neuro_dev_history"] else ""
+        st.markdown(f"### Neuro Dev History{optional_text}")
         st.markdown("The purpose of this form is to gather comprehensive information about a child's developmental history, family context, and environment. It aims to understand the main challenges the child faces at school and home, the family's mental and physical health history, and the child's early years, including pregnancy and early development. This information helps in identifying any developmental concerns and provides a holistic view of the child's upbringing and current situation.")
+        upload_label = "Upload Neuro Dev History" + ("" if MANDATORY_UPLOADS["neuro_dev_history"] else " (Optional)")
         neuro_dev_history = st.file_uploader(
-            "Upload Neuro Dev History",
+            upload_label,
             type=['pdf', 'doc', 'docx', 'txt'],
             key="neuro_dev_history_uploader",
-            help="Upload Neurodevelopmental History document"
+            help="Upload Neurodevelopmental History document" + ("" if MANDATORY_UPLOADS["neuro_dev_history"] else " (optional)")
         )
     
     # Formulation Document Container
     with st.container(border=True):
-        st.markdown("### Formulation Document")
+        optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["formulation_document"] else ""
+        st.markdown(f"### Formulation Document{optional_text}")
         st.markdown("The formulation document provides a comprehensive clinical summary and analysis of the assessment findings. It synthesizes information from all sources to develop a clear understanding of the young person's neurodevelopmental profile, strengths, challenges, and recommended interventions or support strategies.")
+        upload_label = "Upload Formulation Document" + ("" if MANDATORY_UPLOADS["formulation_document"] else " (Optional)")
         formulation_document = st.file_uploader(
-            "Upload Formulation Document",
+            upload_label,
             type=['pdf', 'doc', 'docx', 'txt'],
             key="formulation_document_uploader",
-            help="Upload Formulation Document"
+            help="Upload Formulation Document" + ("" if MANDATORY_UPLOADS["formulation_document"] else " (optional)")
         )
 
 with col2:
     # Form H Container
     with st.container(border=True):
-        st.markdown("### Form H")
+        optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["form_h"] else ""
+        st.markdown(f"### Form H{optional_text}")
         st.markdown("The purpose of Form H is to gather school information for a CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Assessment. It aims to understand the young person's attention, concentration, and hyperactivity levels.")
+        upload_label = "Upload Form H" + ("" if MANDATORY_UPLOADS["form_h"] else " (Optional)")
         form_h = st.file_uploader(
-            "Upload Form H",
+            upload_label,
             type=['pdf', 'doc', 'docx', 'txt'],
             key="form_h_uploader",
-            help="Upload Form H document"
+            help="Upload Form H document" + ("" if MANDATORY_UPLOADS["form_h"] else " (optional)")
         )
     
     # CAHMS Initial Assessment Container
     with st.container(border=True):
-        st.markdown("### CAHMS Initial Assessment Document")
+        optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["cahms_initial"] else ""
+        st.markdown(f"### CAHMS Initial Assessment Document{optional_text}")
         st.markdown("The purpose of this form is to document the initial appointment details for a young person with the CAMHS Neurodevelopmental Team. It includes information about the presenting complaint, family history, patient history, education, developmental history, and clinical observations. The form aims to gather comprehensive information to assess the young person's needs and plan appropriate care and support.")
+        upload_label = "Upload CAHMS Initial Assessment Document" + ("" if MANDATORY_UPLOADS["cahms_initial"] else " (Optional)")
         cahms_initial = st.file_uploader(
-            "Upload CAHMS Initial Assessment Document",
+            upload_label,
             type=['pdf', 'doc', 'docx', 'txt'],
             key="cahms_initial_uploader",
-            help="Upload CAHMS Initial Assessment document"
+            help="Upload CAHMS Initial Assessment document" + ("" if MANDATORY_UPLOADS["cahms_initial"] else " (optional)")
         )
     
     # School Observation Container (Optional)
     with st.container(border=True):
-        mandatory_text = "" if not MANDATORY_UPLOADS["school_observation"] else " **(Required)**"
         optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["school_observation"] else ""
-        st.markdown(f"### School Observation{mandatory_text}{optional_text}")
+        st.markdown(f"### School Observation{optional_text}")
         st.markdown("This document provides additional insights from direct school observations of the child or young person in their educational environment. It can include observations of behavior, interactions, learning patterns, and social engagement within the school setting.")
         upload_label = "Upload School Observation" + ("" if MANDATORY_UPLOADS["school_observation"] else " (Optional)")
         school_observation = st.file_uploader(
@@ -182,9 +192,8 @@ with col2:
     
     # Supporting Information Container (Optional)
     with st.container(border=True):
-        mandatory_text = "" if not MANDATORY_UPLOADS["supporting_information"] else " **(Required)**"
         optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["supporting_information"] else ""
-        st.markdown(f"### Supporting Information{mandatory_text}{optional_text}")
+        st.markdown(f"### Supporting Information{optional_text}")
         st.markdown("This section allows for the upload of any additional supporting documentation that may be relevant to the neurodevelopmental assessment. This could include previous reports, specialist assessments, or other relevant clinical information.")
         upload_label = "Upload Supporting Information" + ("" if MANDATORY_UPLOADS["supporting_information"] else " (Optional)")
         supporting_information = st.file_uploader(
