@@ -1,0 +1,226 @@
+{
+    "runtime": "python",
+    "version": "0.1.50",
+    "trace": {
+        "name": "execute",
+        "__time": {
+            "start": "2025-07-17T13:48:40.681029",
+            "end": "2025-07-17T13:48:41.280241",
+            "duration": 599
+        },
+        "signature": "prompty.cli.execute",
+        "inputs": {
+            "prompt_path": "/workspaces/cahms/src/assessment_report.prompty",
+            "inputs": {
+                "documents": "REQUIRED - Form S (test.pdf): Sample assessment content"
+            },
+            "raw": false
+        },
+        "__frames": [
+            {
+                "name": "load",
+                "__time": {
+                    "start": "2025-07-17T13:48:40.681181",
+                    "end": "2025-07-17T13:48:40.688583",
+                    "duration": 7
+                },
+                "signature": "prompty.load",
+                "description": "Load a prompty file.",
+                "inputs": {
+                    "prompty_file": "/workspaces/cahms/src/assessment_report.prompty",
+                    "configuration": "default"
+                },
+                "result": {
+                    "name": "CAHMS Neurodevelopmental Assessment Report",
+                    "description": "Generate comprehensive neurodevelopmental assessment reports for CAHMS",
+                    "authors": [
+                        "CAHMS Development Team"
+                    ],
+                    "tags": [],
+                    "version": "",
+                    "base": "",
+                    "basePrompty": "None",
+                    "model": {
+                        "api": "openai",
+                        "configuration": {
+                            "type": "azure_openai",
+                            "api_version": "2024-02-15-preview"
+                        },
+                        "parameters": {
+                            "temperature": 0.3,
+                            "max_tokens": 4000,
+                            "top_p": 0.9
+                        },
+                        "response": {}
+                    },
+                    "sample": {
+                        "documents": "REQUIRED - Form S (example_school_assessment.pdf):\nStudent shows difficulty with attention and concentration in classroom settings.\nRequires additional support for task completion and organization.\n\nOPTIONAL - Form H (example_hyperactivity_assessment.pdf):\nHyperactivity levels are within normal range for age group.\nSome fidgeting observed during structured activities."
+                    },
+                    "inputs": {},
+                    "outputs": {},
+                    "template": {
+                        "type": "jinja2",
+                        "parser": "prompty"
+                    },
+                    "file": "/workspaces/cahms/src/assessment_report.prompty",
+                    "content": "system:\nYou are a specialist clinician working with the CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Team.\n\nYour task is to analyze the provided assessment documents and generate a comprehensive neurodevelopmental assessment report.\n\nASSESSMENT TASK:\nPlease analyze all the provided documents and generate a comprehensive neurodevelopmental assessment report that includes:\n\n1. **Executive Summary**\n   - Key findings and recommendations\n   - Primary neurodevelopmental concerns identified\n\n2. **Background Information**\n   - Relevant developmental history\n   - Family context and environmental factors\n   - Educational background and challenges\n\n3. **Assessment Findings**\n   - Analysis of attention, concentration, and hyperactivity (Form H)\n   - Social interaction and communication assessment (Form A)\n   - School-based observations and support needs (Form S)\n   - Clinical observations from initial assessment\n\n4. **Formulation**\n   - Integration of all assessment information\n   - Identified strengths and challenges\n   - Neurodevelopmental profile\n\n5. **Recommendations**\n   - Intervention strategies\n   - Support recommendations for school and home\n   - Follow-up requirements\n   - Referrals to other services if needed\n\n6. **Conclusion**\n   - Summary of key points\n   - Prognosis and next steps\n\nPlease ensure the report is:\n- Professional and clinical in tone\n- Evidence-based using the provided documentation\n- Comprehensive yet accessible\n- Structured with clear headings and bullet points where appropriate\n- Sensitive to the young person and family's needs\n\nuser:\nAVAILABLE DOCUMENTS:\n{{documents}}\n\nGenerate the assessment report now:\n"
+                }
+            },
+            {
+                "name": "execute",
+                "__time": {
+                    "start": "2025-07-17T13:48:41.276122",
+                    "end": "2025-07-17T13:48:41.280146",
+                    "duration": 4
+                },
+                "signature": "prompty.execute",
+                "description": "Execute a prompty",
+                "inputs": {
+                    "prompt": {
+                        "name": "CAHMS Neurodevelopmental Assessment Report",
+                        "description": "Generate comprehensive neurodevelopmental assessment reports for CAHMS",
+                        "authors": [
+                            "CAHMS Development Team"
+                        ],
+                        "tags": [],
+                        "version": "",
+                        "base": "",
+                        "basePrompty": "None",
+                        "model": {
+                            "api": "openai",
+                            "configuration": {
+                                "type": "azure_openai",
+                                "api_version": "2024-02-15-preview"
+                            },
+                            "parameters": {
+                                "temperature": 0.3,
+                                "max_tokens": 4000,
+                                "top_p": 0.9
+                            },
+                            "response": {}
+                        },
+                        "sample": {
+                            "documents": "REQUIRED - Form S (example_school_assessment.pdf):\nStudent shows difficulty with attention and concentration in classroom settings.\nRequires additional support for task completion and organization.\n\nOPTIONAL - Form H (example_hyperactivity_assessment.pdf):\nHyperactivity levels are within normal range for age group.\nSome fidgeting observed during structured activities."
+                        },
+                        "inputs": {},
+                        "outputs": {},
+                        "template": {
+                            "type": "jinja2",
+                            "parser": "prompty"
+                        },
+                        "file": "/workspaces/cahms/src/assessment_report.prompty",
+                        "content": "system:\nYou are a specialist clinician working with the CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Team.\n\nYour task is to analyze the provided assessment documents and generate a comprehensive neurodevelopmental assessment report.\n\nASSESSMENT TASK:\nPlease analyze all the provided documents and generate a comprehensive neurodevelopmental assessment report that includes:\n\n1. **Executive Summary**\n   - Key findings and recommendations\n   - Primary neurodevelopmental concerns identified\n\n2. **Background Information**\n   - Relevant developmental history\n   - Family context and environmental factors\n   - Educational background and challenges\n\n3. **Assessment Findings**\n   - Analysis of attention, concentration, and hyperactivity (Form H)\n   - Social interaction and communication assessment (Form A)\n   - School-based observations and support needs (Form S)\n   - Clinical observations from initial assessment\n\n4. **Formulation**\n   - Integration of all assessment information\n   - Identified strengths and challenges\n   - Neurodevelopmental profile\n\n5. **Recommendations**\n   - Intervention strategies\n   - Support recommendations for school and home\n   - Follow-up requirements\n   - Referrals to other services if needed\n\n6. **Conclusion**\n   - Summary of key points\n   - Prognosis and next steps\n\nPlease ensure the report is:\n- Professional and clinical in tone\n- Evidence-based using the provided documentation\n- Comprehensive yet accessible\n- Structured with clear headings and bullet points where appropriate\n- Sensitive to the young person and family's needs\n\nuser:\nAVAILABLE DOCUMENTS:\n{{documents}}\n\nGenerate the assessment report now:\n"
+                    },
+                    "configuration": {},
+                    "parameters": {},
+                    "inputs": {
+                        "documents": "REQUIRED - Form S (test.pdf): Sample assessment content"
+                    },
+                    "raw": false,
+                    "config_name": "default"
+                },
+                "__frames": [
+                    {
+                        "name": "prepare",
+                        "__time": {
+                            "start": "2025-07-17T13:48:41.276479",
+                            "end": "2025-07-17T13:48:41.279797",
+                            "duration": 3
+                        },
+                        "signature": "prompty.prepare",
+                        "description": "Prepare the inputs for the prompt.",
+                        "inputs": {
+                            "prompt": {
+                                "name": "CAHMS Neurodevelopmental Assessment Report",
+                                "description": "Generate comprehensive neurodevelopmental assessment reports for CAHMS",
+                                "authors": [
+                                    "CAHMS Development Team"
+                                ],
+                                "tags": [],
+                                "version": "",
+                                "base": "",
+                                "basePrompty": "None",
+                                "model": {
+                                    "api": "openai",
+                                    "configuration": {
+                                        "type": "azure_openai",
+                                        "api_version": "2024-02-15-preview"
+                                    },
+                                    "parameters": {
+                                        "temperature": 0.3,
+                                        "max_tokens": 4000,
+                                        "top_p": 0.9
+                                    },
+                                    "response": {}
+                                },
+                                "sample": {
+                                    "documents": "REQUIRED - Form S (example_school_assessment.pdf):\nStudent shows difficulty with attention and concentration in classroom settings.\nRequires additional support for task completion and organization.\n\nOPTIONAL - Form H (example_hyperactivity_assessment.pdf):\nHyperactivity levels are within normal range for age group.\nSome fidgeting observed during structured activities."
+                                },
+                                "inputs": {},
+                                "outputs": {},
+                                "template": {
+                                    "type": "jinja2",
+                                    "parser": "prompty"
+                                },
+                                "file": "/workspaces/cahms/src/assessment_report.prompty",
+                                "content": "system:\nYou are a specialist clinician working with the CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Team.\n\nYour task is to analyze the provided assessment documents and generate a comprehensive neurodevelopmental assessment report.\n\nASSESSMENT TASK:\nPlease analyze all the provided documents and generate a comprehensive neurodevelopmental assessment report that includes:\n\n1. **Executive Summary**\n   - Key findings and recommendations\n   - Primary neurodevelopmental concerns identified\n\n2. **Background Information**\n   - Relevant developmental history\n   - Family context and environmental factors\n   - Educational background and challenges\n\n3. **Assessment Findings**\n   - Analysis of attention, concentration, and hyperactivity (Form H)\n   - Social interaction and communication assessment (Form A)\n   - School-based observations and support needs (Form S)\n   - Clinical observations from initial assessment\n\n4. **Formulation**\n   - Integration of all assessment information\n   - Identified strengths and challenges\n   - Neurodevelopmental profile\n\n5. **Recommendations**\n   - Intervention strategies\n   - Support recommendations for school and home\n   - Follow-up requirements\n   - Referrals to other services if needed\n\n6. **Conclusion**\n   - Summary of key points\n   - Prognosis and next steps\n\nPlease ensure the report is:\n- Professional and clinical in tone\n- Evidence-based using the provided documentation\n- Comprehensive yet accessible\n- Structured with clear headings and bullet points where appropriate\n- Sensitive to the young person and family's needs\n\nuser:\nAVAILABLE DOCUMENTS:\n{{documents}}\n\nGenerate the assessment report now:\n"
+                            },
+                            "inputs": {
+                                "documents": "REQUIRED - Form S (test.pdf): Sample assessment content"
+                            }
+                        },
+                        "__frames": [
+                            {
+                                "name": "Jinja2Renderer",
+                                "__time": {
+                                    "start": "2025-07-17T13:48:41.276658",
+                                    "end": "2025-07-17T13:48:41.279081",
+                                    "duration": 2
+                                },
+                                "signature": "prompty.renderers.Jinja2Renderer.invoke",
+                                "inputs": {
+                                    "data": {
+                                        "documents": "REQUIRED - Form S (test.pdf): Sample assessment content"
+                                    }
+                                },
+                                "result": "system:\nYou are a specialist clinician working with the CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Team.\n\nYour task is to analyze the provided assessment documents and generate a comprehensive neurodevelopmental assessment report.\n\nASSESSMENT TASK:\nPlease analyze all the provided documents and generate a comprehensive neurodevelopmental assessment report that includes:\n\n1. **Executive Summary**\n   - Key findings and recommendations\n   - Primary neurodevelopmental concerns identified\n\n2. **Background Information**\n   - Relevant developmental history\n   - Family context and environmental factors\n   - Educational background and challenges\n\n3. **Assessment Findings**\n   - Analysis of attention, concentration, and hyperactivity (Form H)\n   - Social interaction and communication assessment (Form A)\n   - School-based observations and support needs (Form S)\n   - Clinical observations from initial assessment\n\n4. **Formulation**\n   - Integration of all assessment information\n   - Identified strengths and challenges\n   - Neurodevelopmental profile\n\n5. **Recommendations**\n   - Intervention strategies\n   - Support recommendations for school and home\n   - Follow-up requirements\n   - Referrals to other services if needed\n\n6. **Conclusion**\n   - Summary of key points\n   - Prognosis and next steps\n\nPlease ensure the report is:\n- Professional and clinical in tone\n- Evidence-based using the provided documentation\n- Comprehensive yet accessible\n- Structured with clear headings and bullet points where appropriate\n- Sensitive to the young person and family's needs\n\nuser:\nAVAILABLE DOCUMENTS:\nREQUIRED - Form S (test.pdf): Sample assessment content\n\nGenerate the assessment report now:"
+                            }
+                        ],
+                        "result": {
+                            "exception": {
+                                "type": "<class 'ValueError'>",
+                                "traceback": [
+                                    "  File \"/home/vscode/.local/lib/python3.12/site-packages/prompty/tracer.py\", line 170, in wrapper\n    result = func(*args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^\n",
+                                    "  File \"/home/vscode/.local/lib/python3.12/site-packages/prompty/__init__.py\", line 345, in prepare\n    result = InvokerFactory.run_parser(prompt, render)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+                                    "  File \"/home/vscode/.local/lib/python3.12/site-packages/prompty/invoker.py\", line 255, in run_parser\n    return cls.run(\"parser\", prompty, data, default)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+                                    "  File \"/home/vscode/.local/lib/python3.12/site-packages/prompty/invoker.py\", line 218, in run\n    invoker = cls._get_invoker(type, prompty)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+                                    "  File \"/home/vscode/.local/lib/python3.12/site-packages/prompty/invoker.py\", line 183, in _get_invoker\n    raise ValueError(f\"Parser {name} not found\")\n"
+                                ],
+                                "message": "Parser prompty.openai not found",
+                                "args": "('Parser prompty.openai not found',)"
+                            }
+                        }
+                    }
+                ],
+                "result": {
+                    "exception": {
+                        "type": "<class 'ValueError'>",
+                        "traceback": [
+                            "  File \"/home/vscode/.local/lib/python3.12/site-packages/prompty/tracer.py\", line 170, in wrapper\n    result = func(*args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^\n",
+                            "  File \"/home/vscode/.local/lib/python3.12/site-packages/prompty/__init__.py\", line 534, in execute\n    content = prepare(prompt, inputs)\n              ^^^^^^^^^^^^^^^^^^^^^^^\n",
+                            "  File \"/home/vscode/.local/lib/python3.12/site-packages/prompty/tracer.py\", line 188, in wrapper\n    raise e\n",
+                            "  File \"/home/vscode/.local/lib/python3.12/site-packages/prompty/tracer.py\", line 170, in wrapper\n    result = func(*args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^\n",
+                            "  File \"/home/vscode/.local/lib/python3.12/site-packages/prompty/__init__.py\", line 345, in prepare\n    result = InvokerFactory.run_parser(prompt, render)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+                            "  File \"/home/vscode/.local/lib/python3.12/site-packages/prompty/invoker.py\", line 255, in run_parser\n    return cls.run(\"parser\", prompty, data, default)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+                            "  File \"/home/vscode/.local/lib/python3.12/site-packages/prompty/invoker.py\", line 218, in run\n    invoker = cls._get_invoker(type, prompty)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+                            "  File \"/home/vscode/.local/lib/python3.12/site-packages/prompty/invoker.py\", line 183, in _get_invoker\n    raise ValueError(f\"Parser {name} not found\")\n"
+                        ],
+                        "message": "Parser prompty.openai not found",
+                        "args": "('Parser prompty.openai not found',)"
+                    }
+                }
+            }
+        ],
+        "result": "None"
+    }
+}

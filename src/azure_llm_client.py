@@ -99,6 +99,39 @@ class AzureLLMClient:
             logger.error(f"Direct API call failed: {e}")
             raise
     
+    async def _preprocess_documents(self, documents: List[Any]) -> List[Any]:
+        """Preprocess documents to check for issues before sending to LLM"""
+        print(f"\n🔍 DEBUG: Preprocessing {len(documents)} documents")
+        processed_documents = []
+        
+        for i, doc in enumerate(documents):
+            print(f"🔍 DEBUG: Processing document {i+1}: {doc.filename}")
+            
+            # Check if document has processing errors
+            if doc.content.startswith('[') and doc.content.endswith(']'):
+                logger.warning(f"Document {doc.filename} has processing error: {doc.content}")
+                print(f"⚠ DEBUG: Document {i+1} has processing error: {doc.content}")
+                # Keep the document but mark it as problematic
+                processed_documents.append(doc)
+            else:
+                # Check for suspiciously short content
+                if len(doc.content.strip()) < 50:
+                    logger.warning(f"Document {doc.filename} has very short content: {len(doc.content)} characters")
+                    print(f"⚠ DEBUG: Document {i+1} has very short content: {len(doc.content)} characters")
+                
+                # Check for binary data patterns
+                import re
+                non_printable_ratio = len(re.findall(r'[^\x20-\x7E\n\r\t]', doc.content)) / len(doc.content) if doc.content else 0
+                if non_printable_ratio > 0.3:
+                    logger.warning(f"Document {doc.filename} contains high ratio of non-printable characters: {non_printable_ratio:.2%}")
+                    print(f"⚠ DEBUG: Document {i+1} contains high ratio of non-printable characters: {non_printable_ratio:.2%}")
+                
+                print(f"✅ DEBUG: Document {i+1} looks good ({len(doc.content)} chars)")
+                processed_documents.append(doc)
+        
+        print(f"🔍 DEBUG: Preprocessing complete, {len(processed_documents)} documents ready")
+        return processed_documents
+
     async def generate_assessment_report(self, assessment_request: Any) -> Dict[str, Any]:
         """Generate a neurodevelopmental assessment report using LLM"""
         if not self.is_configured():
@@ -116,9 +149,27 @@ class AzureLLMClient:
             }
         
         try:
+            # Preprocess documents to check for issues
+            processed_documents = await self._preprocess_documents(assessment_request.documents)
+            
             # Create the assessment prompt
-            prompt = self.prompt_generator.create_assessment_prompt(assessment_request.documents)
+            prompt = self.prompt_generator.create_assessment_prompt(processed_documents)
             system_message = self.prompt_generator.create_system_message()
+            
+            # Debug: Output the full prompt being sent to the LLM
+            print("\n" + "="*80)
+            print("DEBUG: FULL PROMPT BEING SENT TO LLM")
+            print("="*80)
+            print(f"SYSTEM MESSAGE ({len(system_message)} chars):")
+            print("-" * 40)
+            print(system_message)
+            print("-" * 40)
+            print(f"USER PROMPT ({len(prompt)} chars):")
+            print("-" * 40)
+            print(prompt)
+            print("="*80)
+            print("END DEBUG OUTPUT")
+            print("="*80 + "\n")
             
             messages = [
                 {"role": "system", "content": system_message},
@@ -195,5 +246,12 @@ class AzureLLMClient:
 try:
     from document_extractor import DocumentContent, AssessmentRequest, process_assessment_documents
 except ImportError:
-    # Import from the old file for backward compatibility
-    from azure_llm_client_old import DocumentContent, AssessmentRequest, process_assessment_documents
+    # Define minimal classes if import fails
+    class DocumentContent:
+        pass
+    
+    class AssessmentRequest:
+        pass
+    
+    def process_assessment_documents(*args, **kwargs):
+        raise ImportError("Document processing not available")
