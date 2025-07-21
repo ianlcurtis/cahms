@@ -133,6 +133,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# Runtime and temporary files
+.runs/
+
 # Spyder project settings
 .spyderproject
 .spyproject
