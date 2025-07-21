@@ -8,12 +8,24 @@ from datetime import datetime
 
 # Import the Azure LLM client
 try:
-    from src.azure_llm_client import AzureLLMClient, process_assessment_documents
+    # Use direct API calls
+    #from azure_llm_client_api import AzureLLMClient as LLMClient, process_assessment_documents
+
+    # Or use Semantic Kernel
+    from azure_llm_client_sk import AzureLLMClientSemanticKernel as LLMClient, process_assessment_documents
+
+    #from src.azure_llm_client_api import AzureLLMClient, process_assessment_documents
 except ImportError:
     try:
-        from azure_llm_client import AzureLLMClient, process_assessment_documents
+        # Use direct API calls
+        #from azure_llm_client_api import AzureLLMClient as LLMClient, process_assessment_documents
+
+        # Or use Semantic Kernel
+        from azure_llm_client_sk import AzureLLMClientSemanticKernel as LLMClient, process_assessment_documents
+
+        #from src.azure_llm_client_api import AzureLLMClient, process_assessment_documents
     except ImportError:
-        st.error("Azure LLM client not found. Make sure azure_llm_client.py is in the src folder.")
+        st.error("Azure LLM client not found. Make sure azure_llm_client_api.py is in the src folder.")
         AzureLLMClient = None
         process_assessment_documents = None
 
@@ -270,8 +282,8 @@ st.markdown("---")
 # Generate button
 async def generate_report_async():
     """Async function to handle report generation with LLM"""
-    if not AzureLLMClient:
-        st.error("LLM client not available. Please check the azure_llm_client.py file.")
+    if not LLMClient:
+        st.error("LLM client not available. Please check the azure_llm_client_api.py file.")
         return
     
     try:
@@ -279,7 +291,7 @@ async def generate_report_async():
         session_id = str(uuid.uuid4())
         
         # Initialize LLM client
-        llm_client = AzureLLMClient()
+        llm_client = LLMClient()
         
         if not llm_client.is_configured():
             st.error("LLM client not configured. Please check your .env file with LLM_ENDPOINT and LLM_API_KEY.")
@@ -354,7 +366,7 @@ def generate_report():
 # Center the generate button
 col1, col2, col3 = st.columns([2, 3, 2])
 with col2:
-    if st.button("🧠 Generate Neurodevelopmental Assessment Report", 
+    if st.button("Generate Neurodevelopmental Assessment Report", 
                  type="primary", 
                  use_container_width=True,
                  on_click=generate_report):
@@ -413,7 +425,7 @@ if st.session_state.output:
         filename = f"CAHMS_Assessment_Report_{timestamp}.txt"
         
         st.download_button(
-            label="📄 Download Report",
+            label="Download Report",
             data=report_content,
             file_name=filename,
             mime="text/plain",
@@ -427,7 +439,7 @@ if st.session_state.output:
         st.markdown("**Additional Options:**")
         
         # Copy to clipboard button (using JavaScript)
-        if st.button("📋 Copy to Clipboard", use_container_width=True):
+        if st.button("Copy to Clipboard", use_container_width=True):
             st.components.v1.html(
                 f"""
                 <script>
@@ -441,7 +453,7 @@ if st.session_state.output:
             st.success("Report copied to clipboard!")
         
         # Print-friendly version
-        if st.button("🖨️ Print View", use_container_width=True):
+        if st.button("Print View", use_container_width=True):
             st.markdown(
                 f"""
                 <script>

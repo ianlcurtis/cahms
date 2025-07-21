@@ -8,6 +8,10 @@ import os
 import logging
 from typing import Dict, List, Optional, Any
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # LLM API imports
 try:
@@ -156,20 +160,6 @@ class AzureLLMClient:
             prompt = self.prompt_generator.create_assessment_prompt(processed_documents)
             system_message = self.prompt_generator.create_system_message()
             
-            # Debug: Output the full prompt being sent to the LLM
-            print("\n" + "="*80)
-            print("DEBUG: FULL PROMPT BEING SENT TO LLM")
-            print("="*80)
-            print(f"SYSTEM MESSAGE ({len(system_message)} chars):")
-            print("-" * 40)
-            print(system_message)
-            print("-" * 40)
-            print(f"USER PROMPT ({len(prompt)} chars):")
-            print("-" * 40)
-            print(prompt)
-            print("="*80)
-            print("END DEBUG OUTPUT")
-            print("="*80 + "\n")
             
             messages = [
                 {"role": "system", "content": system_message},

@@ -1,6 +1,6 @@
 # CAHMS Neurodevelopmental Assessment Tool
 
-A comprehensive Streamlit application for generating neurodevelopmental assessment reports for Child and Adolescent Mental Health Services (CAHMS). This tool uses Azure OpenAI services and Prompty templates to analyze uploaded assessment documents and generate professional clinical reports.
+A Streamlit application for generating neurodevelopmental assessment reports for Child and Adolescent Mental Health Services (CAHMS). This tool uses Azure OpenAI services and Prompty templates to analyze uploaded assessment documents and generate professional clinical reports.
 
 ![CAHMS UI Screenshot](images/cahms_ui.png)
 
@@ -99,7 +99,7 @@ cahms/
 │   ├── Home.py                     # Main Streamlit application
 │   ├── assessment_prompt.py        # Prompty-based prompt generation
 │   ├── assessment_report.prompty   # Prompty template for reports
-│   ├── azure_llm_client.py        # Azure OpenAI client
+│   ├── azure_llm_client_api.py    # Azure OpenAI client
 │   └── document_extractor.py      # Document processing utilities
 ├── infra/
 │   ├── core.bicep                 # Azure infrastructure template
