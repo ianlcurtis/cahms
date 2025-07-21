@@ -2,6 +2,9 @@
 
 A comprehensive Streamlit application for generating neurodevelopmental assessment reports for Child and Adolescent Mental Health Services (CAHMS). This tool uses Azure OpenAI services and Prompty templates to analyze uploaded assessment documents and generate professional clinical reports.
 
+![CAHMS UI Screenshot](images/cahms_ui.png)
+
+
 ## Features
 
 - **Multi-document Processing**: Supports PDF and Word documents for various assessment forms
