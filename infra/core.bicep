@@ -33,10 +33,6 @@ resource appService 'Microsoft.Web/sites@2020-06-01' = {
           value: 'text to replace title'
         }
         {
-          name: 'PROMPT_FLOW_ENDPOINT'
-          value: 'endpoint'
-        }
-        {
           name: 'SCM_BASIC_AUTH_ENABLED' // Enable SCM basic authentication
           value: 'true'
         }
@@ -52,7 +48,7 @@ resource srcControls 'Microsoft.Web/sites/sourcecontrols@2021-01-01' = {
   parent: appService
   name: 'web'
   properties: {
-    repoUrl: 'https://github.com/Hsenrab/streamlit_chat.git'
+    repoUrl: 'https://github.com/ianlcurtis/cahms.git'
     branch: repositoryBranch
     isManualIntegration: true
   }
