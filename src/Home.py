@@ -25,7 +25,7 @@ except ImportError:
 
         #from src.azure_llm_client_api import AzureLLMClient, process_assessment_documents
     except ImportError:
-        st.error("Azure LLM client not found. Make sure azure_llm_client_api.py is in the src folder.")
+        st.error("Azure LLM client not found. Make sure azure_llm_client_*.py is in the src folder.")
         AzureLLMClient = None
         process_assessment_documents = None
 
@@ -33,7 +33,7 @@ except ImportError:
 load_dotenv()
 
 title = os.getenv("TITLE", "CAHMS Neurodevelopmental Assessment Tool")
-logo = os.getenv("LOGO_URL", "images/msft_logo.png")
+logo = os.getenv("LOGO_URL", "images/azure_logo.png")
 
 
 # Configure which uploads are mandatory
@@ -76,7 +76,7 @@ if "supporting_information" not in st.session_state:
     st.session_state.supporting_information = None
 
 # Set page configuration
-st.set_page_config(page_title=title, page_icon=":brain:", layout="wide")
+st.set_page_config(page_title=title, page_icon=None, layout="wide")
 
 # Display logo and title
 col1, col2 = st.columns([1, 4])
@@ -283,7 +283,7 @@ st.markdown("---")
 async def generate_report_async():
     """Async function to handle report generation with LLM"""
     if not LLMClient:
-        st.error("LLM client not available. Please check the azure_llm_client_api.py file.")
+        st.error("LLM client not available. Please check the azure_llm_client_*.py file.")
         return
     
     try:
