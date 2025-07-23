@@ -12,8 +12,11 @@ A Streamlit application for generating neurodevelopmental assessment reports for
 - **Template-based Prompts**: Uses versioned text templates for structured prompt engineering
 - **Configurable Requirements**: Customizable mandatory/optional document requirements
 - **Professional Reports**: Generates comprehensive neurodevelopmental assessment reports
+- **Multiple LLM Clients**: Supports both direct API and Semantic Kernel integration
 
 ## Supported Document Types
+
+The application accepts PDF, DOC, DOCX, and TXT files for the following assessment forms:
 
 - **Form S**: School-based assessment documents
 - **Form H**: Hyperactivity and attention assessment
@@ -26,9 +29,10 @@ A Streamlit application for generating neurodevelopmental assessment reports for
 
 ## Prerequisites
 
-- Python 3.8+
+- Python 3.12+ (3.8+ minimum)
 - Azure OpenAI service endpoint and API key
 - Azure CLI (for deployment)
+- Streamlit
 
 ## Installation
 
@@ -47,13 +51,13 @@ pip install -r requirements.txt
 ```env
 # Application Configuration
 TITLE="CAHMS Neurodevelopmental Assessment Tool"
-LOGO_URL="images/msft_logo.png"
+LOGO_URL="images/azure_logo.png"
 
-# Azure OpenAI Configuration
-AZURE_OPENAI_ENDPOINT="your-openai-endpoint"
-AZURE_OPENAI_API_KEY="your-api-key"
-AZURE_OPENAI_DEPLOYMENT_NAME="your-deployment-name"
-AZURE_OPENAI_API_VERSION="2024-02-01"
+# Azure OpenAI/LLM Configuration
+LLM_ENDPOINT="your-azure-openai-endpoint"
+LLM_API_KEY="your-api-key"
+LLM_MODEL_NAME="gpt-4"
+USE_OPENAI_CLIENT="true"
 
 # Mandatory Document Configuration (optional)
 MANDATORY_FORM_S="true"
@@ -72,6 +76,9 @@ MANDATORY_SUPPORTING_INFO="false"
 ```bash
 streamlit run src/Home.py
 ```
+
+### Development Container
+The project includes a development container configuration in `.devcontainer/` for consistent development environments. Use VS Code with the Dev Containers extension to automatically set up the development environment.
 
 ### Azure Deployment
 
@@ -98,34 +105,39 @@ cahms/
 ├── src/
 │   ├── Home.py                      # Main Streamlit application
 │   ├── assessment_prompt.py         # Template-based prompt generation
-│   ├── azure_llm_client_api.py     # Azure OpenAI client
-│   └── document_extractor.py       # Document processing utilities
+│   ├── azure_llm_client_api.py      # Azure OpenAI direct API client
+│   ├── azure_llm_client_sk.py       # Azure OpenAI Semantic Kernel client
+│   └── document_extractor.py        # Document processing utilities
 ├── prompts/
 │   ├── assessment_prompt_template.txt # Assessment prompt template
 │   └── system_message.txt           # System message template
 ├── infra/
-│   ├── core.bicep                  # Azure infrastructure template
-│   ├── test.bicepparam             # Test environment parameters
-│   └── prod.bicepparam             # Production environment parameters
-├── images/                         # Static assets
-├── requirements.txt                # Python dependencies
-└── README.md                      # This file
+│   ├── core.bicep                   # Azure infrastructure template
+│   ├── test.bicepparam              # Test environment parameters
+│   └── prod.bicepparam              # Production environment parameters
+├── images/                          # Static assets and logos
+├── .devcontainer/                   # Development container configuration
+├── .github/                         # GitHub workflows and configurations
+├── requirements.txt                 # Python dependencies
+└── README.md                       # This file
 ```
 
 ## Usage
 
-1. **Upload Documents**: Use the sidebar to upload assessment documents in PDF or Word format
+1. **Upload Documents**: Upload assessment documents in PDF or Word format using the file upload interface
 2. **Configure Requirements**: Set which documents are mandatory vs optional via environment variables
-3. **Generate Report**: Click "Generate Assessment Report" to process documents and create a comprehensive report
-4. **Review Output**: The generated report includes executive summary, background, findings, formulation, and recommendations
+3. **Generate Report**: Click "Generate Neurodevelopmental Assessment Report" to process documents and create a comprehensive report
+4. **Review Output**: The generated report includes metadata, download options, and comprehensive assessment findings
+5. **Export Options**: Download as text file, copy to clipboard, or print the report
 
 ## Configuration
 
 The application can be customized through environment variables:
 
-- **Document Requirements**: Control which document types are mandatory
-- **Branding**: Customize title and logo
-- **Azure OpenAI**: Configure AI service endpoints and models
+- **LLM Configuration**: Set `LLM_ENDPOINT`, `LLM_API_KEY`, and `LLM_MODEL_NAME` for Azure OpenAI
+- **Document Requirements**: Control which document types are mandatory using `MANDATORY_*` variables
+- **Branding**: Customize title and logo with `TITLE` and `LOGO_URL`
+- **Client Selection**: Choose between direct API or Semantic Kernel with `USE_OPENAI_CLIENT`
 
 ## Contributing
 
