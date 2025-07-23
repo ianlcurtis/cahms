@@ -1,0 +1,4 @@
+AVAILABLE DOCUMENTS:
+{documents}
+
+Generate the assessment report now:

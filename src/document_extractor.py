@@ -1,9 +1,12 @@
 """
-Document Extractor for CAHMS Neurodevelopmental Assessment
+Generic Document Extractor
 This module handles extraction of text content from various document formats.
+Supports PDF, DOCX, and text files with robust error handling and validation.
 """
 
 import logging
+import re
+import io
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from datetime import datetime
@@ -24,8 +27,8 @@ class DocumentContent:
 
 
 @dataclass
-class AssessmentRequest:
-    """Represents a complete assessment request"""
+class DocumentRequest:
+    """Represents a complete document processing request"""
     documents: List[DocumentContent]
     session_id: str
     request_timestamp: datetime
@@ -46,33 +49,19 @@ class DocumentExtractor:
             Extracted text content
         """
         try:
-            # Check if file_content is valid
-            if not file_content or len(file_content) == 0:
+            if not file_content:
                 logger.warning(f"Empty file content for {filename}")
                 return f"[Empty file: {filename}]"
             
-            # Log file size for debugging
             logger.info(f"Processing file {filename} with size {len(file_content)} bytes")
             
             # Extract based on file type
             if filename.lower().endswith('.txt'):
-                # Handle text files
-                try:
-                    text = file_content.decode('utf-8')
-                    return self._clean_text_content(text, filename)
-                except UnicodeDecodeError:
-                    try:
-                        text = file_content.decode('latin-1', errors='ignore')
-                        return self._clean_text_content(text, filename)
-                    except Exception as e:
-                        return f"[Error decoding text file {filename}: {str(e)}]"
-                        
+                return self._extract_text_content(file_content, filename)
             elif filename.lower().endswith('.pdf'):
                 return await self._extract_pdf_content(file_content, filename)
-                
             elif filename.lower().endswith(('.doc', '.docx')):
                 return await self._extract_docx_content(file_content, filename)
-                
             else:
                 logger.warning(f"Unsupported file format: {filename}")
                 return f"[Unsupported file format: {filename}. Supported formats: .txt, .pdf, .doc, .docx]"
@@ -81,29 +70,36 @@ class DocumentExtractor:
             logger.error(f"Error extracting content from {filename}: {e}")
             return f"[Error extracting content from {filename}: {str(e)}]"
     
+    def _extract_text_content(self, file_content: bytes, filename: str) -> str:
+        """Extract and clean text content from text files"""
+        try:
+            text = file_content.decode('utf-8')
+        except UnicodeDecodeError:
+            try:
+                text = file_content.decode('latin-1', errors='ignore')
+            except Exception as e:
+                return f"[Error decoding text file {filename}: {str(e)}]"
+        
+        return self._clean_text_content(text, filename)
+    
     def _clean_text_content(self, text: str, filename: str) -> str:
         """Clean and validate extracted text content"""
-        import re
-        
-        # Remove null bytes and other problematic characters
+        # Remove null bytes and problematic characters
         text = text.replace('\x00', '')
         
         # Remove excessive whitespace
         text = re.sub(r'\s+', ' ', text)
         text = re.sub(r'\n\s*\n', '\n\n', text)
-        
-        # Strip leading/trailing whitespace
         text = text.strip()
         
-        # Check if we have meaningful content
+        # Validate content
         if not text:
             return f"[File {filename} appears to be empty after processing]"
         
-        # Check for suspiciously short content
         if len(text) < 10:
             return f"[File {filename} contains very little readable content: {text}]"
         
-        # Check for binary data patterns (might indicate corruption)
+        # Check for binary data patterns
         if len(re.findall(r'[^\x20-\x7E\n\r\t]', text)) > len(text) * 0.5:
             return f"[File {filename} appears to contain binary data or is corrupted]"
         
@@ -113,17 +109,12 @@ class DocumentExtractor:
         """Extract text from PDF files"""
         try:
             import PyPDF2
-            import io
             
-            # Check if file_content is not empty
-            if not file_content or len(file_content) == 0:
-                logger.warning(f"Empty file content for {filename}")
+            if not file_content:
                 return f"[Empty file: {filename}]"
             
-            # Try to create PDF reader
             pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_content))
             
-            # Check if PDF is encrypted
             if pdf_reader.is_encrypted:
                 logger.warning(f"PDF file {filename} is encrypted")
                 return f"[PDF file {filename} is encrypted and cannot be processed without a password]"
@@ -139,16 +130,13 @@ class DocumentExtractor:
                     logger.warning(f"Error extracting text from page {page_num + 1} of {filename}: {page_error}")
                     continue
             
-            # Clean up extracted text
             text = text.strip()
             
-            # Check if we got meaningful content
             if not text or len(text) < 10:
                 logger.warning(f"Very little or no text extracted from {filename}")
                 return f"[PDF file {filename} appears to contain no readable text content - it may be image-based or corrupted]"
             
-            # Remove excessive whitespace and clean up
-            import re
+            # Clean up extracted text
             text = re.sub(r'\s+', ' ', text)
             text = re.sub(r'\n\s*\n', '\n\n', text)
             
@@ -165,14 +153,10 @@ class DocumentExtractor:
         """Extract text from DOCX files"""
         try:
             from docx import Document
-            import io
             
-            # Check if file_content is not empty
-            if not file_content or len(file_content) == 0:
-                logger.warning(f"Empty file content for {filename}")
+            if not file_content:
                 return f"[Empty file: {filename}]"
             
-            # Check if it's a valid DOCX file
             try:
                 doc = Document(io.BytesIO(file_content))
                 text = ""
@@ -182,60 +166,41 @@ class DocumentExtractor:
                     if paragraph.text.strip():
                         text += paragraph.text + "\n"
                 
-                # Also extract text from tables
+                # Extract text from tables
                 for table in doc.tables:
                     for row in table.rows:
-                        row_text = []
-                        for cell in row.cells:
-                            if cell.text.strip():
-                                row_text.append(cell.text.strip())
+                        row_text = [cell.text.strip() for cell in row.cells if cell.text.strip()]
                         if row_text:
                             text += "\t".join(row_text) + "\n"
                 
-                # Clean up extracted text
                 text = text.strip()
                 
-                # Check if we got meaningful content
                 if not text or len(text) < 10:
                     logger.warning(f"Very little or no text extracted from {filename}")
                     return f"[DOCX file {filename} appears to contain no readable text content - it may be empty or corrupted]"
                 
-                # Remove excessive whitespace and clean up
-                import re
+                # Clean up extracted text
                 text = re.sub(r'\s+', ' ', text)
                 text = re.sub(r'\n\s*\n', '\n\n', text)
                 
                 return text
                 
             except Exception as docx_error:
-                # If DOCX parsing fails, try to extract as plain text
                 logger.warning(f"DOCX parsing failed for {filename}, trying text extraction: {docx_error}")
                 
-                # Check if it might be a password-protected file
                 if "password" in str(docx_error).lower() or "encrypted" in str(docx_error).lower():
                     return f"[DOCX file {filename} appears to be password-protected or encrypted]"
                 
-                try:
-                    # Try to decode as UTF-8 text
-                    text_content = file_content.decode('utf-8', errors='ignore')
-                    
-                    # Clean up and check if we got meaningful content
-                    text_content = text_content.strip()
-                    if len(text_content) > 50:  # Arbitrary threshold for meaningful content
-                        return text_content
-                    else:
-                        # If that fails, try latin-1 encoding
-                        try:
-                            text_content = file_content.decode('latin-1', errors='ignore')
-                            text_content = text_content.strip()
-                            if len(text_content) > 50:
-                                return text_content
-                            else:
-                                return f"[Could not extract meaningful content from {filename} - file may be corrupted, empty, or in unsupported format]"
-                        except:
-                            return f"[Could not extract content from {filename} - file may be corrupted or in unsupported format]"
-                except:
-                    return f"[Could not extract content from {filename} - file may be corrupted or in unsupported format]"
+                # Fallback to plain text extraction
+                for encoding in ['utf-8', 'latin-1']:
+                    try:
+                        text_content = file_content.decode(encoding, errors='ignore').strip()
+                        if len(text_content) > 50:
+                            return text_content
+                    except:
+                        continue
+                
+                return f"[Could not extract content from {filename} - file may be corrupted or in unsupported format]"
                         
         except ImportError:
             logger.error(f"python-docx not installed. Cannot process DOCX file: {filename}")
@@ -243,6 +208,47 @@ class DocumentExtractor:
         except Exception as e:
             logger.error(f"Error extracting DOCX content from {filename}: {e}")
             return f"[Error extracting DOCX content from {filename}: {str(e)}]"
+    
+    async def preprocess_documents(self, documents: List[DocumentContent]) -> List[DocumentContent]:
+        """
+        Preprocess documents to check for issues and ensure they're in the correct format
+        
+        Args:
+            documents: List of DocumentContent objects to preprocess
+            
+        Returns:
+            List of processed DocumentContent objects
+        """
+        logger.info(f"Preprocessing {len(documents)} documents")
+        processed_documents = []
+        
+        for i, doc in enumerate(documents):
+            logger.debug(f"Processing document {i+1}: {doc.filename}")
+            
+            try:
+                # Check if document has processing errors
+                if doc.content.startswith('[') and doc.content.endswith(']'):
+                    logger.warning(f"Document {doc.filename} has processing error: {doc.content}")
+                else:
+                    # Check for suspiciously short content
+                    if len(doc.content.strip()) < 50:
+                        logger.warning(f"Document {doc.filename} has very short content: {len(doc.content)} characters")
+                    
+                    # Check for binary data patterns
+                    non_printable_ratio = len(re.findall(r'[^\x20-\x7E\n\r\t]', doc.content)) / len(doc.content) if doc.content else 0
+                    if non_printable_ratio > 0.3:
+                        logger.warning(f"Document {doc.filename} contains high ratio of non-printable characters: {non_printable_ratio:.2%}")
+                    
+                    logger.debug(f"Document {i+1} processed successfully ({len(doc.content)} chars)")
+                
+                processed_documents.append(doc)
+                    
+            except Exception as e:
+                logger.error(f"Error processing document {doc.filename}: {e}")
+                processed_documents.append(doc)
+        
+        logger.info(f"Preprocessing complete, {len(processed_documents)} documents ready")
+        return processed_documents
     
     async def validate_documents(self, documents: List[DocumentContent]) -> Dict[str, Any]:
         """
@@ -261,14 +267,9 @@ class DocumentExtractor:
             "document_analysis": {}
         }
         
-        # Check for required documents based on what's actually marked as required
+        # Check for required documents that are missing content
         required_docs = [doc for doc in documents if doc.is_required]
-        
-        # Check if any required documents are missing (empty or no content)
-        missing_required = []
-        for doc in required_docs:
-            if not doc.content or len(doc.content.strip()) == 0:
-                missing_required.append(doc.document_type)
+        missing_required = [doc.document_type for doc in required_docs if not doc.content or not doc.content.strip()]
         
         if missing_required:
             validation_results["valid"] = False
@@ -295,46 +296,37 @@ class DocumentExtractor:
         return validation_results
 
 
-async def process_assessment_documents(uploaded_files: Dict[str, Any], session_id: str, mandatory_uploads: Dict[str, bool] = None) -> AssessmentRequest:
+async def process_documents(
+    uploaded_files: Dict[str, Any], 
+    session_id: str, 
+    document_mappings: Dict[str, str] = None,
+    mandatory_uploads: Dict[str, bool] = None
+) -> DocumentRequest:
     """
-    Process uploaded files into an AssessmentRequest
+    Process uploaded files into a DocumentRequest
     
     Args:
-        uploaded_files: Dictionary of uploaded files from Streamlit session state
+        uploaded_files: Dictionary of uploaded files from file upload interface
         session_id: Unique session identifier
+        document_mappings: Dictionary mapping file keys to document type names
         mandatory_uploads: Dictionary specifying which uploads are mandatory
         
     Returns:
-        AssessmentRequest object
+        DocumentRequest object
     """
     documents = []
     
-    # Default mandatory configuration if not provided
-    if mandatory_uploads is None:
-        mandatory_uploads = {
-            "form_s": True,
-            "form_h": False,
-            "form_a": False,
-            "cahms_initial": False,
-            "neuro_dev_history": False,
-            "formulation_document": False,
-            "school_observation": False,
-            "supporting_information": False
+    # Default document mappings if not provided
+    if document_mappings is None:
+        document_mappings = {
+            "document_1": "Document 1",
+            "document_2": "Document 2",
+            "document_3": "Document 3"
         }
     
-    # Define document mappings
-    document_mappings = {
-        "form_s": "Form S",
-        "form_h": "Form H",
-        "form_a": "Form A",
-        "cahms_initial": "CAHMS Initial Assessment",
-        "neuro_dev_history": "Neuro Dev History",
-        "formulation_document": "Formulation Document",
-        "school_observation": "School Observation",
-        "supporting_information": "Supporting Information"
-    }
+    if mandatory_uploads is None:
+        mandatory_uploads = {key: False for key in document_mappings.keys()}
     
-    # Initialize document extractor
     extractor = DocumentExtractor()
     
     for file_key, doc_type in document_mappings.items():
@@ -343,13 +335,9 @@ async def process_assessment_documents(uploaded_files: Dict[str, Any], session_i
         
         if file_obj:
             try:
-                # Read file content
                 file_content = file_obj.read()
-                
-                # Extract text content using the document extractor
                 text_content = await extractor.extract_document_content(file_content, file_obj.name)
                 
-                # Create document content object
                 doc_content = DocumentContent(
                     filename=file_obj.name,
                     content=text_content,
@@ -363,7 +351,6 @@ async def process_assessment_documents(uploaded_files: Dict[str, Any], session_i
                 
             except Exception as e:
                 logger.error(f"Error processing {doc_type} ({file_obj.name}): {e}")
-                # Create a placeholder document with error message
                 doc_content = DocumentContent(
                     filename=file_obj.name,
                     content=f"[Error processing {file_obj.name}: {str(e)}]",
@@ -373,8 +360,55 @@ async def process_assessment_documents(uploaded_files: Dict[str, Any], session_i
                 )
                 documents.append(doc_content)
     
-    return AssessmentRequest(
+    return DocumentRequest(
         documents=documents,
         session_id=session_id,
         request_timestamp=datetime.now()
+    )
+
+
+# Convenience functions for specific use cases
+
+async def process_assessment_documents(uploaded_files: Dict[str, Any], session_id: str, mandatory_uploads: Dict[str, bool] = None) -> DocumentRequest:
+    """
+    Process CAHMS assessment documents - convenience wrapper for process_documents
+    
+    Args:
+        uploaded_files: Dictionary of uploaded files from Streamlit session state
+        session_id: Unique session identifier
+        mandatory_uploads: Dictionary specifying which uploads are mandatory
+        
+    Returns:
+        DocumentRequest object
+    """
+    # CAHMS-specific document mappings
+    cahms_document_mappings = {
+        "form_s": "Form S",
+        "form_h": "Form H", 
+        "form_a": "Form A",
+        "cahms_initial": "CAHMS Initial Assessment",
+        "neuro_dev_history": "Neuro Dev History",
+        "formulation_document": "Formulation Document",
+        "school_observation": "School Observation",
+        "supporting_information": "Supporting Information"
+    }
+    
+    # CAHMS-specific mandatory defaults
+    if mandatory_uploads is None:
+        mandatory_uploads = {
+            "form_s": True,
+            "form_h": False,
+            "form_a": False,
+            "cahms_initial": False,
+            "neuro_dev_history": False,
+            "formulation_document": False,
+            "school_observation": False,
+            "supporting_information": False
+        }
+    
+    return await process_documents(
+        uploaded_files=uploaded_files,
+        session_id=session_id,
+        document_mappings=cahms_document_mappings,
+        mandatory_uploads=mandatory_uploads
     )

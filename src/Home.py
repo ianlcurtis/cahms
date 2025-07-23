@@ -1,33 +1,9 @@
 import os
 import streamlit as st
 from dotenv import load_dotenv
-import json
 import asyncio
 import uuid
 from datetime import datetime
-
-# Import the Azure LLM client
-try:
-    # Use direct API calls
-    #from azure_llm_client_api import AzureLLMClient as LLMClient, process_assessment_documents
-
-    # Or use Semantic Kernel
-    from azure_llm_client_sk import AzureLLMClientSemanticKernel as LLMClient, process_assessment_documents
-
-    #from src.azure_llm_client_api import AzureLLMClient, process_assessment_documents
-except ImportError:
-    try:
-        # Use direct API calls
-        #from azure_llm_client_api import AzureLLMClient as LLMClient, process_assessment_documents
-
-        # Or use Semantic Kernel
-        from azure_llm_client_sk import AzureLLMClientSemanticKernel as LLMClient, process_assessment_documents
-
-        #from src.azure_llm_client_api import AzureLLMClient, process_assessment_documents
-    except ImportError:
-        st.error("Azure LLM client not found. Make sure azure_llm_client_*.py is in the src folder.")
-        AzureLLMClient = None
-        process_assessment_documents = None
 
 # Load environment variables
 load_dotenv()
@@ -35,9 +11,23 @@ load_dotenv()
 title = os.getenv("TITLE", "CAHMS Neurodevelopmental Assessment Tool")
 logo = os.getenv("LOGO_URL", "images/azure_logo.png")
 
+# Set page configuration FIRST - before any other Streamlit commands
+st.set_page_config(page_title=title, page_icon=None, layout="wide")
 
-# Configure which uploads are mandatory
-# This can be customized based on organizational requirements
+# Import the Azure LLM client and assessment prompt functionality
+try:
+    from azure_llm_client_sk import AzureLLMClientSemanticKernel as LLMClient
+    #from azure_llm_client_api import AzureLLMClient as LLMClient
+    from document_extractor import DocumentExtractor, process_assessment_documents
+    from assessment_prompt import AssessmentPromptGenerator
+except ImportError:
+    st.error("Azure LLM client not found. Make sure azure_llm_client_*.py is in the src folder.")
+    LLMClient = None
+    process_assessment_documents = None
+    DocumentExtractor = None
+    AssessmentPromptGenerator = None
+
+# Configure mandatory uploads
 MANDATORY_UPLOADS = {
     "form_s": os.getenv("MANDATORY_FORM_S", "true").lower() == "true",
     "form_h": os.getenv("MANDATORY_FORM_H", "false").lower() == "true", 
@@ -49,34 +39,80 @@ MANDATORY_UPLOADS = {
     "supporting_information": os.getenv("MANDATORY_SUPPORTING_INFO", "false").lower() == "true"
 }
 
-# Initialize session state for result
-if "output" not in st.session_state:
-    st.session_state.output = ""
-if "report_metadata" not in st.session_state:
-    st.session_state.report_metadata = None
-if "generation_in_progress" not in st.session_state:
-    st.session_state.generation_in_progress = False
+# File configurations
+FILE_CONFIGS = {
+    "form_s": {
+        "display_name": "Form S",
+        "description": "The purpose of Form S is to gather school information for a CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Assessment. It aims to understand the strategies and support provided to the child or young person, and why this support is necessary, to better comprehend their neurodevelopmental needs."
+    },
+    "form_h": {
+        "display_name": "Form H",
+        "description": "The purpose of Form H is to gather school information for a CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Assessment. It aims to understand the young person's attention, concentration, and hyperactivity levels."
+    },
+    "form_a": {
+        "display_name": "Form A",
+        "description": "The purpose of Form A is to gather school information for a CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Assessment. It aims to understand the young person's social interactions, communication skills, and any restricted or repetitive behaviours."
+    },
+    "cahms_initial": {
+        "display_name": "CAHMS Initial Assessment Document",
+        "description": "The purpose of this form is to document the initial appointment details for a young person with the CAMHS Neurodevelopmental Team. It includes information about the presenting complaint, family history, patient history, education, developmental history, and clinical observations."
+    },
+    "neuro_dev_history": {
+        "display_name": "Neuro Dev History",
+        "description": "The purpose of this form is to gather comprehensive information about a child's developmental history, family context, and environment. It aims to understand the main challenges the child faces at school and home, the family's mental and physical health history, and the child's early years."
+    },
+    "formulation_document": {
+        "display_name": "Formulation Document",
+        "description": "The formulation document provides a comprehensive clinical summary and analysis of the assessment findings. It synthesizes information from all sources to develop a clear understanding of the young person's neurodevelopmental profile, strengths, challenges, and recommended interventions."
+    },
+    "school_observation": {
+        "display_name": "School Observation",
+        "description": "This document provides additional insights from direct school observations of the child or young person in their educational environment. It can include observations of behavior, interactions, learning patterns, and social engagement."
+    },
+    "supporting_information": {
+        "display_name": "Supporting Information",
+        "description": "This section allows for the upload of any additional supporting documentation that may be relevant to the neurodevelopmental assessment. This could include previous reports, specialist assessments, or other relevant clinical information."
+    }
+}
 
-# Initialize session state for uploaded files
-if "form_s" not in st.session_state:
-    st.session_state.form_s = None
-if "form_h" not in st.session_state:
-    st.session_state.form_h = None
-if "form_a" not in st.session_state:
-    st.session_state.form_a = None
-if "cahms_initial" not in st.session_state:
-    st.session_state.cahms_initial = None
-if "neuro_dev_history" not in st.session_state:
-    st.session_state.neuro_dev_history = None
-if "formulation_document" not in st.session_state:
-    st.session_state.formulation_document = None
-if "school_observation" not in st.session_state:
-    st.session_state.school_observation = None
-if "supporting_information" not in st.session_state:
-    st.session_state.supporting_information = None
+def initialize_session_state():
+    """Initialize all session state variables"""
+    # Result states
+    for key in ["output", "report_metadata", "generation_in_progress"]:
+        if key not in st.session_state:
+            st.session_state[key] = "" if key == "output" else None if key == "report_metadata" else False
+    
+    # File upload states
+    for key in FILE_CONFIGS.keys():
+        if key not in st.session_state:
+            st.session_state[key] = None
 
-# Set page configuration
-st.set_page_config(page_title=title, page_icon=None, layout="wide")
+def create_file_upload_container(file_key, column):
+    """Create a file upload container for a specific file type"""
+    config = FILE_CONFIGS[file_key]
+    is_mandatory = MANDATORY_UPLOADS[file_key]
+    optional_text = "" if is_mandatory else " *(Optional)*"
+    
+    with column:
+        with st.container(border=True):
+            st.markdown(f"### {config['display_name']}{optional_text}")
+            st.markdown(config['description'])
+            
+            upload_label = f"Upload {config['display_name']}" + ("" if is_mandatory else " (Optional)")
+            help_text = f"Upload {config['display_name']} document" + ("" if is_mandatory else " (optional)")
+            
+            uploaded_file = st.file_uploader(
+                upload_label,
+                type=['pdf', 'doc', 'docx', 'txt'],
+                key=f"{file_key}_uploader",
+                help=help_text
+            )
+            
+            if uploaded_file:
+                st.session_state[file_key] = uploaded_file
+
+# Initialize session state
+initialize_session_state()
 
 # Display logo and title
 col1, col2 = st.columns([1, 4])
@@ -88,196 +124,99 @@ with col2:
 
 st.markdown("---")
 
-# Add custom CSS for container styling
-st.markdown("""
-<style>
-div[data-testid="stVerticalBlock"] > div[style*="flex-direction: column"] {
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    padding: 20px;
-    margin: 10px 0;
-    background-color: #f9f9f9;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-</style>
-""", unsafe_allow_html=True)
-
 # File upload section
 st.header("Document Upload")
 st.markdown("Please upload the required documents for neurodevelopmental assessment:")
 
-# Create file upload fields
+# Create file upload fields in two columns
 col1, col2 = st.columns(2)
 
-with col1:
-    # Form S Container
-    with st.container(border=True):
-        optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["form_s"] else ""
-        st.markdown(f"### Form S{optional_text}")
-        st.markdown("The purpose of Form S is to gather school information for a CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Assessment. It aims to understand the strategies and support provided to the child or young person, and why this support is necessary, to better comprehend their neurodevelopmental needs.")
-        upload_label = "Upload Form S" + ("" if MANDATORY_UPLOADS["form_s"] else " (Optional)")
-        form_s = st.file_uploader(
-            upload_label,
-            type=['pdf', 'doc', 'docx', 'txt'],
-            key="form_s_uploader",
-            help="Upload Form S document" + ("" if MANDATORY_UPLOADS["form_s"] else " (optional)")
-        )
-    
-    # Form A Container
-    with st.container(border=True):
-        optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["form_a"] else ""
-        st.markdown(f"### Form A{optional_text}")
-        st.markdown("The purpose of Form A is to gather school information for a CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Assessment. It aims to understand the young person's social interactions, communication skills, and any restricted or repetitive behaviours.")
-        upload_label = "Upload Form A" + ("" if MANDATORY_UPLOADS["form_a"] else " (Optional)")
-        form_a = st.file_uploader(
-            upload_label,
-            type=['pdf', 'doc', 'docx', 'txt'],
-            key="form_a_uploader",
-            help="Upload Form A document" + ("" if MANDATORY_UPLOADS["form_a"] else " (optional)")
-        )
-    
-    # Neuro Dev History Container
-    with st.container(border=True):
-        optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["neuro_dev_history"] else ""
-        st.markdown(f"### Neuro Dev History{optional_text}")
-        st.markdown("The purpose of this form is to gather comprehensive information about a child's developmental history, family context, and environment. It aims to understand the main challenges the child faces at school and home, the family's mental and physical health history, and the child's early years, including pregnancy and early development. This information helps in identifying any developmental concerns and provides a holistic view of the child's upbringing and current situation.")
-        upload_label = "Upload Neuro Dev History" + ("" if MANDATORY_UPLOADS["neuro_dev_history"] else " (Optional)")
-        neuro_dev_history = st.file_uploader(
-            upload_label,
-            type=['pdf', 'doc', 'docx', 'txt'],
-            key="neuro_dev_history_uploader",
-            help="Upload Neurodevelopmental History document" + ("" if MANDATORY_UPLOADS["neuro_dev_history"] else " (optional)")
-        )
-    
-    # Formulation Document Container
-    with st.container(border=True):
-        optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["formulation_document"] else ""
-        st.markdown(f"### Formulation Document{optional_text}")
-        st.markdown("The formulation document provides a comprehensive clinical summary and analysis of the assessment findings. It synthesizes information from all sources to develop a clear understanding of the young person's neurodevelopmental profile, strengths, challenges, and recommended interventions or support strategies.")
-        upload_label = "Upload Formulation Document" + ("" if MANDATORY_UPLOADS["formulation_document"] else " (Optional)")
-        formulation_document = st.file_uploader(
-            upload_label,
-            type=['pdf', 'doc', 'docx', 'txt'],
-            key="formulation_document_uploader",
-            help="Upload Formulation Document" + ("" if MANDATORY_UPLOADS["formulation_document"] else " (optional)")
-        )
+# Left column files
+left_column_files = ["form_s", "form_a", "neuro_dev_history", "formulation_document"]
+for file_key in left_column_files:
+    create_file_upload_container(file_key, col1)
 
-with col2:
-    # Form H Container
-    with st.container(border=True):
-        optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["form_h"] else ""
-        st.markdown(f"### Form H{optional_text}")
-        st.markdown("The purpose of Form H is to gather school information for a CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Assessment. It aims to understand the young person's attention, concentration, and hyperactivity levels.")
-        upload_label = "Upload Form H" + ("" if MANDATORY_UPLOADS["form_h"] else " (Optional)")
-        form_h = st.file_uploader(
-            upload_label,
-            type=['pdf', 'doc', 'docx', 'txt'],
-            key="form_h_uploader",
-            help="Upload Form H document" + ("" if MANDATORY_UPLOADS["form_h"] else " (optional)")
-        )
-    
-    # CAHMS Initial Assessment Container
-    with st.container(border=True):
-        optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["cahms_initial"] else ""
-        st.markdown(f"### CAHMS Initial Assessment Document{optional_text}")
-        st.markdown("The purpose of this form is to document the initial appointment details for a young person with the CAMHS Neurodevelopmental Team. It includes information about the presenting complaint, family history, patient history, education, developmental history, and clinical observations. The form aims to gather comprehensive information to assess the young person's needs and plan appropriate care and support.")
-        upload_label = "Upload CAHMS Initial Assessment Document" + ("" if MANDATORY_UPLOADS["cahms_initial"] else " (Optional)")
-        cahms_initial = st.file_uploader(
-            upload_label,
-            type=['pdf', 'doc', 'docx', 'txt'],
-            key="cahms_initial_uploader",
-            help="Upload CAHMS Initial Assessment document" + ("" if MANDATORY_UPLOADS["cahms_initial"] else " (optional)")
-        )
-    
-    # School Observation Container (Optional)
-    with st.container(border=True):
-        optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["school_observation"] else ""
-        st.markdown(f"### School Observation{optional_text}")
-        st.markdown("This document provides additional insights from direct school observations of the child or young person in their educational environment. It can include observations of behavior, interactions, learning patterns, and social engagement within the school setting.")
-        upload_label = "Upload School Observation" + ("" if MANDATORY_UPLOADS["school_observation"] else " (Optional)")
-        school_observation = st.file_uploader(
-            upload_label,
-            type=['pdf', 'doc', 'docx', 'txt'],
-            key="school_observation_uploader",
-            help="Upload School Observation document" + ("" if MANDATORY_UPLOADS["school_observation"] else " (optional)")
-        )
-    
-    # Supporting Information Container (Optional)
-    with st.container(border=True):
-        optional_text = " *(Optional)*" if not MANDATORY_UPLOADS["supporting_information"] else ""
-        st.markdown(f"### Supporting Information{optional_text}")
-        st.markdown("This section allows for the upload of any additional supporting documentation that may be relevant to the neurodevelopmental assessment. This could include previous reports, specialist assessments, or other relevant clinical information.")
-        upload_label = "Upload Supporting Information" + ("" if MANDATORY_UPLOADS["supporting_information"] else " (Optional)")
-        supporting_information = st.file_uploader(
-            upload_label,
-            type=['pdf', 'doc', 'docx', 'txt'],
-            key="supporting_information_uploader",
-            help="Upload Supporting Information documents" + ("" if MANDATORY_UPLOADS["supporting_information"] else " (optional)")
-        )
-
-# Store uploaded files in session state
-if form_s:
-    st.session_state.form_s = form_s
-if form_h:
-    st.session_state.form_h = form_h
-if form_a:
-    st.session_state.form_a = form_a
-if cahms_initial:
-    st.session_state.cahms_initial = cahms_initial
-if neuro_dev_history:
-    st.session_state.neuro_dev_history = neuro_dev_history
-if formulation_document:
-    st.session_state.formulation_document = formulation_document
-if school_observation:
-    st.session_state.school_observation = school_observation
-if supporting_information:
-    st.session_state.supporting_information = supporting_information
+# Right column files  
+right_column_files = ["form_h", "cahms_initial", "school_observation", "supporting_information"]
+for file_key in right_column_files:
+    create_file_upload_container(file_key, col2)
 
 # Display upload status
-# Separate files into mandatory and optional based on configuration
-all_files = [
-    ("form_s", "Form S", st.session_state.form_s),
-    ("form_h", "Form H", st.session_state.form_h),
-    ("form_a", "Form A", st.session_state.form_a),
-    ("cahms_initial", "CAHMS Initial Assessment", st.session_state.cahms_initial),
-    ("neuro_dev_history", "Neuro Dev History", st.session_state.neuro_dev_history),
-    ("formulation_document", "Formulation Document", st.session_state.formulation_document),
-    ("school_observation", "School Observation", st.session_state.school_observation),
-    ("supporting_information", "Supporting Information", st.session_state.supporting_information)
-]
+def display_upload_status():
+    """Display the current upload status for all files"""
+    all_files = [(key, config["display_name"], st.session_state[key]) 
+                 for key, config in FILE_CONFIGS.items()]
+    
+    mandatory_files = [(key, name, file) for key, name, file in all_files if MANDATORY_UPLOADS[key]]
+    optional_files = [(key, name, file) for key, name, file in all_files if not MANDATORY_UPLOADS[key]]
+    
+    st.markdown("### Upload Status")
+    
+    if mandatory_files:
+        st.markdown("**Required Documents:**")
+        mandatory_cols = st.columns(len(mandatory_files))
+        for i, (key, name, file) in enumerate(mandatory_files):
+            with mandatory_cols[i]:
+                if file:
+                    st.success(f"✅ {name}")
+                else:
+                    st.error(f"❌ {name}")
+    
+    if optional_files:
+        st.markdown("**Optional Documents:**")
+        optional_cols = st.columns(len(optional_files))
+        for i, (key, name, file) in enumerate(optional_files):
+            with optional_cols[i]:
+                if file:
+                    st.success(f"✅ {name}")
+                else:
+                    st.info(f"⚪ {name} (Optional)")
 
-# Filter into mandatory and optional based on configuration
-mandatory_files = [(key, name, file) for key, name, file in all_files if MANDATORY_UPLOADS[key]]
-optional_files = [(key, name, file) for key, name, file in all_files if not MANDATORY_UPLOADS[key]]
-
-st.markdown("### Upload Status")
-
-if mandatory_files:
-    st.markdown("**Required Documents:**")
-    # Create columns based on number of mandatory files
-    mandatory_cols = st.columns(len(mandatory_files))
-    for i, (key, name, file) in enumerate(mandatory_files):
-        with mandatory_cols[i]:
-            if file:
-                st.success(f"✅ {name}")
-            else:
-                st.error(f"❌ {name}")
-
-if optional_files:
-    st.markdown("**Optional Documents:**")
-    # Create columns based on number of optional files
-    optional_cols = st.columns(len(optional_files))
-    for i, (key, name, file) in enumerate(optional_files):
-        with optional_cols[i]:
-            if file:
-                st.success(f"✅ {name}")
-            else:
-                st.info(f"⚪ {name} (Optional)")
-
-# Update uploaded_files list for validation
-uploaded_files = [(name, file) for key, name, file in mandatory_files]
+display_upload_status()
 
 st.markdown("---")
+
+def create_assessment_prompt_and_system_message(documents):
+    """
+    Create assessment prompt and system message from processed documents
+    
+    Args:
+        documents: List of processed documents
+        
+    Returns:
+        Tuple of (prompt, system_message)
+    """
+    # Initialize prompt generator
+    if AssessmentPromptGenerator:
+        prompt_generator = AssessmentPromptGenerator()
+        try:
+            prompt = prompt_generator.create_assessment_prompt(documents)
+            system_message = prompt_generator.create_system_message()
+            return prompt, system_message
+        except Exception as e:
+            st.warning(f"Could not load prompt template: {str(e)}. Using fallback prompt.")
+    
+    # Fallback prompt generation if AssessmentPromptGenerator is not available
+    document_content = ""
+    for doc in documents:
+        status = "REQUIRED" if doc.is_required else "OPTIONAL"
+        document_content += f"\n{status} - {doc.document_type} ({doc.filename}):\n"
+        document_content += f"{doc.content}\n"
+        document_content += "-" * 80 + "\n"
+    
+    fallback_prompt = f"""You are a specialist clinician working with the CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Team.
+
+Please analyze the provided assessment documents and generate a comprehensive neurodevelopmental assessment report.
+
+AVAILABLE DOCUMENTS:
+{document_content}
+
+Generate the assessment report now:
+"""
+    
+    fallback_system_message = "You are an expert clinician specializing in neurodevelopmental assessments for children and adolescents."
+    
+    return fallback_prompt, fallback_system_message
 
 # Generate button
 async def generate_report_async():
@@ -287,25 +226,19 @@ async def generate_report_async():
         return
     
     try:
-        # Create session ID
-        session_id = str(uuid.uuid4())
-        
         # Initialize LLM client
         llm_client = LLMClient()
-        
         if not llm_client.is_configured():
             st.error("LLM client not configured. Please check your .env file with LLM_ENDPOINT and LLM_API_KEY.")
             return
         
-        # Prepare uploaded files dictionary with mandatory status
-        uploaded_files_dict = {}
-        for key in ["form_s", "form_h", "form_a", "cahms_initial", "neuro_dev_history", 
-                   "formulation_document", "school_observation", "supporting_information"]:
-            file_obj = getattr(st.session_state, key)
-            if file_obj:
-                uploaded_files_dict[key] = file_obj
+        # Prepare uploaded files dictionary
+        uploaded_files_dict = {key: st.session_state[key] 
+                             for key in FILE_CONFIGS.keys() 
+                             if st.session_state[key] is not None}
         
-        # Process documents with mandatory configuration
+        # Process documents
+        session_id = str(uuid.uuid4())
         assessment_request = await process_assessment_documents(uploaded_files_dict, session_id, MANDATORY_UPLOADS)
         
         if not assessment_request.documents:
@@ -313,21 +246,48 @@ async def generate_report_async():
             return
         
         # Validate documents
-        validation_result = await llm_client.validate_documents(assessment_request.documents)
-        
-        if not validation_result["valid"]:
-            st.error(f"Document validation failed: {'; '.join(validation_result['errors'])}")
-            return
-        
-        if validation_result["warnings"]:
-            for warning in validation_result["warnings"]:
+        if DocumentExtractor:
+            document_extractor = DocumentExtractor()
+            validation_result = await document_extractor.validate_documents(assessment_request.documents)
+            if not validation_result["valid"]:
+                st.error(f"Document validation failed: {'; '.join(validation_result['errors'])}")
+                return
+            
+            for warning in validation_result.get("warnings", []):
                 st.warning(warning)
+        else:
+            st.warning("Document validation not available - DocumentExtractor not imported")
+        
+        # Generate prompt and system message locally
+        prompt, system_message = create_assessment_prompt_and_system_message(assessment_request.documents)
+        
+        # Create a simple request object with the prepared prompt
+        class PromptRequest:
+            def __init__(self, prompt, system_message, documents):
+                self.prompt = prompt
+                self.system_message = system_message
+                self.documents = documents
+                self.session_id = assessment_request.session_id
+                self.request_timestamp = assessment_request.request_timestamp
+        
+        prompt_request = PromptRequest(prompt, system_message, assessment_request.documents)
         
         # Generate the report
+        start_time = datetime.now()
         with st.spinner("Generating neurodevelopmental assessment report... This may take a few minutes."):
-            result = await llm_client.generate_assessment_report(assessment_request)
+            result = await llm_client.generate_response(prompt_request)
+        end_time = datetime.now()
+        
+        # Calculate duration
+        duration = end_time - start_time
+        duration_seconds = duration.total_seconds()
         
         if result["success"]:
+            # Add duration to metadata
+            if result.get("metadata"):
+                result["metadata"]["call_duration_seconds"] = duration_seconds
+                result["metadata"]["call_duration_formatted"] = f"{int(duration_seconds // 60)}m {int(duration_seconds % 60)}s"
+            
             st.session_state.output = result["report"]
             st.session_state.report_metadata = result["metadata"]
             st.success("Assessment report generated successfully!")
@@ -345,8 +305,10 @@ async def generate_report_async():
 
 def generate_report():
     """Function to handle report generation"""
-    # Check if all required files are uploaded (optional files don't need to be uploaded)
-    required_files = [file for _, file in uploaded_files]
+    # Check if all required files are uploaded
+    mandatory_files = [(key, config["display_name"], st.session_state[key]) 
+                      for key, config in FILE_CONFIGS.items() if MANDATORY_UPLOADS[key]]
+    required_files = [file for _, _, file in mandatory_files]
     all_required_uploaded = all(required_files)
     
     if not all_required_uploaded:
@@ -373,7 +335,11 @@ with col2:
         pass
 
 # Display output if available
-if st.session_state.output:
+def display_report():
+    """Display the generated report with download and action buttons"""
+    if not st.session_state.output:
+        return
+        
     st.markdown("---")
     st.header("Generated Assessment Report")
     
@@ -381,21 +347,99 @@ if st.session_state.output:
     if st.session_state.report_metadata:
         with st.expander("Report Metadata", expanded=False):
             metadata = st.session_state.report_metadata
+            
+            # Compact metadata display in 3 columns with smaller font
+            st.markdown(
+                """
+                <style>
+                .compact-metadata {
+                    font-size: 0.8em;
+                    line-height: 1.2;
+                }
+                .compact-metadata .metric-label {
+                    font-weight: bold;
+                    color: #666;
+                    margin-bottom: 2px;
+                }
+                .compact-metadata .metric-value {
+                    font-size: 1.1em;
+                    color: #333;
+                    margin-bottom: 8px;
+                }
+                </style>
+                """, 
+                unsafe_allow_html=True
+            )
+            
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                st.metric("Documents Processed", metadata.get("documents_processed", "N/A"))
-                st.metric("Required Documents", metadata.get("required_documents", "N/A"))
+                docs_processed = str(metadata.get("documents_processed", "N/A"))
+                required_docs = str(metadata.get("required_documents", "N/A"))
+                optional_docs = str(metadata.get("optional_documents", "N/A"))
+                
+                st.markdown(
+                    f"""<div class="compact-metadata">
+                        <div class="metric-label">Documents Processed</div>
+                        <div class="metric-value">{docs_processed}</div>
+                        <div class="metric-label">Required Documents</div>
+                        <div class="metric-value">{required_docs}</div>
+                        <div class="metric-label">Optional Documents</div>
+                        <div class="metric-value">{optional_docs}</div>
+                    </div>""", 
+                    unsafe_allow_html=True
+                )
             
             with col2:
-                st.metric("Optional Documents", metadata.get("optional_documents", "N/A"))
-                st.metric("Model Used", metadata.get("model_used", "N/A"))
+                duration_formatted = metadata.get("call_duration_formatted", "N/A")
+                duration_seconds = metadata.get("call_duration_seconds", "N/A")
+                duration_display = str(duration_formatted)
+                if duration_seconds != "N/A":
+                    duration_display += f" ({duration_seconds:.1f}s)"
+                
+                model_used = str(metadata.get("model_used", "N/A"))
+                total_tokens = str(metadata.get("total_tokens", "N/A"))
+                
+                st.markdown(
+                    f"""<div class="compact-metadata">
+                        <div class="metric-label">Model Used</div>
+                        <div class="metric-value">{model_used}</div>
+                        <div class="metric-label">Generation Time</div>
+                        <div class="metric-value">{duration_display}</div>
+                        <div class="metric-label">Total Tokens</div>
+                        <div class="metric-value">{total_tokens}</div>
+                    </div>""", 
+                    unsafe_allow_html=True
+                )
             
             with col3:
-                st.metric("Tokens Used", metadata.get("tokens_used", "N/A"))
-                st.text(f"Generated: {metadata.get('generation_timestamp', 'N/A')}")
+                prompt_tokens = str(metadata.get("prompt_tokens", "N/A"))
+                completion_tokens = str(metadata.get("completion_tokens", "N/A"))
+                generation_time = metadata.get('generation_timestamp', 'N/A')
+                
+                if generation_time != 'N/A':
+                    try:
+                        # Parse and format the timestamp for better display
+                        dt = datetime.fromisoformat(generation_time.replace('Z', '+00:00'))
+                        formatted_time = dt.strftime("%Y-%m-%d %H:%M:%S")
+                    except:
+                        formatted_time = str(generation_time)
+                else:
+                    formatted_time = "N/A"
+                
+                st.markdown(
+                    f"""<div class="compact-metadata">
+                        <div class="metric-label">Prompt Tokens</div>
+                        <div class="metric-value">{prompt_tokens}</div>
+                        <div class="metric-label">Response Tokens</div>
+                        <div class="metric-value">{completion_tokens}</div>
+                        <div class="metric-label">Generated</div>
+                        <div class="metric-value">{formatted_time}</div>
+                    </div>""", 
+                    unsafe_allow_html=True
+                )
     
-    # Create two columns for the report display and download button
+    # Create two columns for the report display and action buttons
     col1, col2 = st.columns([4, 1])
     
     with col1:
@@ -420,13 +464,12 @@ if st.session_state.output:
     
     with col2:
         # Download button
-        report_content = st.session_state.output
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"CAHMS_Assessment_Report_{timestamp}.txt"
         
         st.download_button(
             label="Download Report",
-            data=report_content,
+            data=st.session_state.output,
             file_name=filename,
             mime="text/plain",
             type="secondary",
@@ -434,16 +477,16 @@ if st.session_state.output:
             help="Download the assessment report as a text file"
         )
         
-        # Additional download options
+        # Additional options
         st.markdown("---")
         st.markdown("**Additional Options:**")
         
-        # Copy to clipboard button (using JavaScript)
+        # Copy to clipboard
         if st.button("Copy to Clipboard", use_container_width=True):
             st.components.v1.html(
                 f"""
                 <script>
-                navigator.clipboard.writeText(`{report_content.replace('`', '\\`')}`).then(function() {{
+                navigator.clipboard.writeText(`{st.session_state.output.replace('`', '\\`')}`).then(function() {{
                     console.log('Report copied to clipboard');
                 }});
                 </script>
@@ -452,9 +495,10 @@ if st.session_state.output:
             )
             st.success("Report copied to clipboard!")
         
-        # Print-friendly version
+        # Print view
         if st.button("Print View", use_container_width=True):
-            st.markdown(
+            current_time = datetime.now().strftime("%B %d, %Y at %I:%M %p")
+            st.components.v1.html(
                 f"""
                 <script>
                 var printWindow = window.open('', '', 'height=600,width=800');
@@ -462,9 +506,9 @@ if st.session_state.output:
                 printWindow.document.write('<style>body{{font-family: Arial, sans-serif; line-height: 1.6; margin: 40px;}}</style>');
                 printWindow.document.write('</head><body>');
                 printWindow.document.write('<h1>CAHMS Neurodevelopmental Assessment Report</h1>');
-                printWindow.document.write('<p><strong>Generated:</strong> {datetime.now().strftime("%B %d, %Y at %I:%M %p")}</p>');
+                printWindow.document.write('<p><strong>Generated:</strong> {current_time}</p>');
                 printWindow.document.write('<hr>');
-                printWindow.document.write(`{report_content.replace('\n', '<br>').replace('`', '\\`')}`);
+                printWindow.document.write(`{st.session_state.output.replace('\n', '<br>').replace('`', '\\`')}`);
                 printWindow.document.write('</body></html>');
                 printWindow.document.close();
                 printWindow.print();
@@ -472,5 +516,7 @@ if st.session_state.output:
                 """,
                 unsafe_allow_html=True
             )
+
+display_report()
 
 

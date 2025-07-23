@@ -1,6 +1,6 @@
 # CAHMS Neurodevelopmental Assessment Tool
 
-A Streamlit application for generating neurodevelopmental assessment reports for Child and Adolescent Mental Health Services (CAHMS). This tool uses Azure OpenAI services and Prompty templates to analyze uploaded assessment documents and generate professional clinical reports.
+A Streamlit application for generating neurodevelopmental assessment reports for Child and Adolescent Mental Health Services (CAHMS). This tool uses Azure OpenAI services and template-based prompts to analyze uploaded assessment documents and generate professional clinical reports.
 
 ![CAHMS UI Screenshot](images/cahms_ui.png)
 
@@ -9,7 +9,7 @@ A Streamlit application for generating neurodevelopmental assessment reports for
 
 - **Multi-document Processing**: Supports PDF and Word documents for various assessment forms
 - **Intelligent Analysis**: Uses Azure OpenAI to analyze and synthesize assessment information
-- **Prompty Integration**: Leverages Prompty templates for structured prompt engineering
+- **Template-based Prompts**: Uses versioned text templates for structured prompt engineering
 - **Configurable Requirements**: Customizable mandatory/optional document requirements
 - **Professional Reports**: Generates comprehensive neurodevelopmental assessment reports
 
@@ -96,18 +96,20 @@ az deployment group what-if --resource-group rg-cahms --template-file infra/core
 ```
 cahms/
 ├── src/
-│   ├── Home.py                     # Main Streamlit application
-│   ├── assessment_prompt.py        # Prompty-based prompt generation
-│   ├── assessment_report.prompty   # Prompty template for reports
-│   ├── azure_llm_client_api.py    # Azure OpenAI client
-│   └── document_extractor.py      # Document processing utilities
+│   ├── Home.py                      # Main Streamlit application
+│   ├── assessment_prompt.py         # Template-based prompt generation
+│   ├── azure_llm_client_api.py     # Azure OpenAI client
+│   └── document_extractor.py       # Document processing utilities
+├── prompts/
+│   ├── assessment_prompt_template.txt # Assessment prompt template
+│   └── system_message.txt           # System message template
 ├── infra/
-│   ├── core.bicep                 # Azure infrastructure template
-│   ├── test.bicepparam            # Test environment parameters
-│   └── prod.bicepparam            # Production environment parameters
-├── images/                        # Static assets
-├── requirements.txt               # Python dependencies
-└── README.md                     # This file
+│   ├── core.bicep                  # Azure infrastructure template
+│   ├── test.bicepparam             # Test environment parameters
+│   └── prod.bicepparam             # Production environment parameters
+├── images/                         # Static assets
+├── requirements.txt                # Python dependencies
+└── README.md                      # This file
 ```
 
 ## Usage

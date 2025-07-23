@@ -5,7 +5,6 @@ This module handles the creation of prompts for LLM-based assessment report gene
 
 import os
 from typing import List, Any
-from prompty import load, prepare
 
 
 # Constants for fallback messages
@@ -22,15 +21,16 @@ Generate the assessment report now:
 
 
 class AssessmentPromptGenerator:
-    """Generates prompts for neurodevelopmental assessment reports using Prompty"""
+    """Generates prompts for neurodevelopmental assessment reports using template files"""
     
     def __init__(self):
-        """Initialize the prompt generator with the prompty file"""
-        self.prompty_file_path = os.path.join(os.path.dirname(__file__), "assessment_report.prompty")
+        """Initialize the prompt generator with template files"""
+        self.prompt_template_path = os.path.join(os.path.dirname(__file__), "..", "prompts", "assessment_prompt_template.txt")
+        self.system_message_path = os.path.join(os.path.dirname(__file__), "..", "prompts", "system_message.txt")
         
     def create_assessment_prompt(self, documents: List[Any]) -> str:
         """
-        Create a comprehensive prompt for the LLM based on uploaded documents using Prompty
+        Create a comprehensive prompt for the LLM based on uploaded documents using template files
         
         Args:
             documents: List of processed documents
@@ -40,7 +40,7 @@ class AssessmentPromptGenerator:
         """
         
         # =============================================================================
-        # DOCUMENT CONTENT PREPARATION - Format documents for the prompty template
+        # DOCUMENT CONTENT PREPARATION - Format documents for the template
         # =============================================================================
         
         document_content = ""
@@ -52,41 +52,37 @@ class AssessmentPromptGenerator:
             document_content += "-" * 80 + "\n"
         
         # =============================================================================
-        # PROMPTY EXECUTION - Load and prepare the prompt using the prompty file
+        # TEMPLATE EXECUTION - Load and prepare the prompt using the template file
         # =============================================================================
         
         try:
-            # Load the prompty file
-            prompt_template = load(self.prompty_file_path)
+            # Load the prompt template file
+            with open(self.prompt_template_path, 'r', encoding='utf-8') as f:
+                template_content = f.read()
             
-            # Prepare the prompt with document data
-            prepared_prompt = prepare(prompt_template, documents=document_content)
+            # Format the template with document data
+            formatted_prompt = template_content.format(documents=document_content)
             
-            return prepared_prompt
+            return formatted_prompt
             
         except Exception as e:
-            # Fallback to a basic prompt if prompty fails
+            # Fallback to a basic prompt if template loading fails
             return FALLBACK_PROMPT_TEMPLATE.format(document_content=document_content)
     
     def create_system_message(self) -> str:
         """
-        Create the system message for the LLM using Prompty metadata
+        Create the system message for the LLM using the system message template file
         
         Returns:
             System message string
         """
         try:
-            # Load the prompty file to extract system message
-            prompt_template = load(self.prompty_file_path)
+            # Load the system message from the template file
+            with open(self.system_message_path, 'r', encoding='utf-8') as f:
+                system_message = f.read().strip()
             
-            # Extract the system message from the prompty template
-            # The system message is typically in the 'system' section of the prompty file
-            if hasattr(prompt_template, 'system') and prompt_template.system:
-                return prompt_template.system.strip()
-            else:
-                # Fallback system message
-                return FALLBACK_SYSTEM_MESSAGE
+            return system_message
                 
         except Exception as e:
-            # Fallback system message if prompty fails
+            # Fallback system message if template loading fails
             return FALLBACK_SYSTEM_MESSAGE
