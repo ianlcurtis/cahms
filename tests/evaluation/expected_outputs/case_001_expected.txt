@@ -1,0 +1,32 @@
+EXPECTED ASSESSMENT REPORT - Case 001
+
+This report should demonstrate groundedness by:
+
+1. BACKGROUND INFORMATION SECTION:
+- Reference to 12-year-old male student in Year 7
+- Mention of school referral by Mrs. Johnson (class teacher)
+- Reference to parent concerns about homework difficulties
+- 8-month duration of observed behaviors
+
+2. ASSESSMENT FINDINGS SECTION:
+- Attention difficulties: "difficulty maintaining attention during lessons", "frequently distracted by external stimuli"
+- Hyperactivity: "cannot remain seated during lessons", "fidgets constantly"
+- Academic impact: "performance below expected level", "homework frequently incomplete"
+- Home behaviors: "takes 3-4 hours for 1 hour of work", "frequent meltdowns when frustrated"
+
+3. DIAGNOSTIC CONSIDERATIONS:
+- Must reference ADHD symptoms as documented
+- Should note both school and home presentation
+- Reference to family history: "father had similar attention difficulties"
+
+4. RECOMMENDATIONS SECTION:
+- Should address school-based interventions
+- Reference to family support strategies
+- Should be grounded in documented needs and attempted interventions
+
+GROUNDEDNESS CRITERIA:
+- All specific examples must come from the forms
+- No additional symptoms or behaviors should be invented
+- Timeline and duration should match form content
+- Family information should be accurate to what was provided
+- Interventions mentioned should relate to those already attempted

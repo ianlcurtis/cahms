@@ -1,0 +1,34 @@
+{
+  "groundedness_threshold": 3.0,
+  "relevance_threshold": 3.0,
+  "azure_openai_endpoint": "${LLM_ENDPOINT}",
+  "azure_openai_api_key": "${LLM_API_KEY}",
+  "evaluation_model": "gpt-4",
+  "pass_rate_threshold": 0.8,
+  "test_cases": [
+    {
+      "case_id": "case_001",
+      "description": "ADHD assessment with school and home forms",
+      "expected_findings": ["attention difficulties", "hyperactivity", "school support needs"],
+      "required_documents": ["form_s.pdf", "form_h.pdf"]
+    },
+    {
+      "case_id": "case_002", 
+      "description": "ASD assessment with social communication focus",
+      "expected_findings": ["social interaction challenges", "communication difficulties", "repetitive behaviors"],
+      "required_documents": ["form_s.pdf", "form_a.pdf"]
+    },
+    {
+      "case_id": "case_003",
+      "description": "Complex case with multiple forms and history",
+      "expected_findings": ["comprehensive assessment", "multi-domain difficulties", "coordinated support plan"],
+      "required_documents": ["form_s.pdf", "cahms_initial.pdf", "neuro_dev_history.pdf"]
+    }
+  ],
+  "evaluation_settings": {
+    "max_response_length": 5000,
+    "min_response_length": 1000,
+    "timeout_seconds": 120,
+    "retry_attempts": 3
+  }
+}

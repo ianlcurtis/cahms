@@ -5,14 +5,28 @@
 name: Build and deploy Python app to Azure Web App - test-streamlit-temp
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CAHMS Groundedness Evaluation"]
+    types:
+      - completed
     branches:
       - main
   workflow_dispatch:
 
 jobs:
+  check-evaluation:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    
+    steps:
+    - name: Groundedness evaluation passed
+      run: |
+        echo "✅ Groundedness evaluation passed successfully"
+        echo "Proceeding with deployment..."
+
   build:
     runs-on: ubuntu-latest
+    needs: check-evaluation
 
     steps:
       - uses: actions/checkout@v4
