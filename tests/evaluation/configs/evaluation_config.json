@@ -3,7 +3,7 @@
   "relevance_threshold": 3.0,
   "azure_openai_endpoint": "${LLM_ENDPOINT}",
   "azure_openai_api_key": "${LLM_API_KEY}",
-  "evaluation_model": "gpt-4",
+  "evaluation_model": "${LLM_MODEL_NAME}",
   "pass_rate_threshold": 0.8,
   "test_cases": [
     {

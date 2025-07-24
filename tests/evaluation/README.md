@@ -61,13 +61,26 @@ These are already included in `requirements.txt`.
 **For GitHub Actions (Recommended - OIDC):**
 1. Go to **Certificates & secrets** → **Federated credentials**
 2. Click **Add credential** → **GitHub Actions deploying Azure resources**
-3. Configure:
-   - **Organization**: `<YOUR ORGANISATION>`
-   - **Repository**: `cahms`
-   - **Entity type**: `Branch`
-   - **GitHub branch name**: `main`
-   - **Name**: `GitHub-Actions-Main`
-4. Repeat for `develop` branch if needed
+3. Add three credentials with these settings:
+
+   **Main Branch:**
+   - Organization: `<YOUR ORGANISATION>`, Repository: `cahms`
+   - Entity type: `Branch`, Branch name: `main`
+   
+   **Dev Branch:**
+   - Organization: `<YOUR ORGANISATION>`, Repository: `cahms`
+   - Entity type: `Branch`, Branch name: `develop`
+   
+   **Pull Requests:**
+   - Organization: `<YOUR ORGANISATION>`, Repository: `cahms`
+   - Entity type: `Pull request`
+
+4. Verify you see these subject identifiers:
+   - `repo:<YOUR ORGANISATION>/cahms:ref:refs/heads/main`
+   - `repo:<YOUR ORGANISATION>/cahms:ref:refs/heads/develop`
+   - `repo:<YOUR ORGANISATION>/cahms:pull_request`
+
+> **⚠️ Critical**: Missing credentials cause `AADSTS70025` errors.
 
 **Alternative - Client Secret (Less Secure):**
 1. Go to **Certificates & secrets** → **Client secrets**
@@ -258,9 +271,10 @@ The overall evaluation passes if:
 ### Common Issues
 
 1. **Authentication Errors**: 
-   - Verify app registration is created and configured
-   - Check that RBAC roles are assigned correctly
-   - Ensure federated credentials match your GitHub repository exactly
+   - `AADSTS70025: no configured federated identity credentials` → Add all three federated credentials (Step 2.2)
+   - `Application with identifier was not found` → Check `AZURE_CLIENT_ID` and `AZURE_TENANT_ID` secrets match your app registration
+   - `AADSTS700016: Application was not found` → Verify you're in the correct Azure AD tenant
+   - Ensure RBAC roles are assigned to your app registration
    
 2. **Azure AI Foundry Access Denied**:
    - Confirm app registration has `Azure AI Developer` role on the AI project

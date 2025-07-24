@@ -119,7 +119,7 @@ class CAHMSGroundednessEvaluator:
                 "relevance_threshold": 3.0,
                 "azure_openai_endpoint": os.getenv("LLM_ENDPOINT"),
                 "azure_openai_api_key": os.getenv("LLM_API_KEY"),
-                "evaluation_model": "gpt-4",
+                "evaluation_model": os.getenv("LLM_MODEL_NAME", "gpt-4"),
                 "pass_rate_threshold": 0.8
             }
     
@@ -130,7 +130,7 @@ class CAHMSGroundednessEvaluator:
             model_config = AzureOpenAIModelConfiguration(
                 azure_endpoint=self.config["azure_openai_endpoint"],
                 api_key=self.config["azure_openai_api_key"],
-                azure_deployment=self.config.get("evaluation_model", "gpt-4"),
+                azure_deployment=self.config.get("evaluation_model", os.getenv("LLM_MODEL_NAME", "gpt-4")),
                 api_version="2024-02-15-preview"
             )
             

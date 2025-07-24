@@ -2,7 +2,7 @@ name: Evaluate
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, dev ]
     paths: 
       - 'src/**'
       - 'prompts/**'
