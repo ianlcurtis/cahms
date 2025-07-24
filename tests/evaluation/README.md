@@ -43,7 +43,81 @@ pip install azure-ai-evaluation azure-identity azure-ai-projects pytest pytest-a
 
 These are already included in `requirements.txt`.
 
-### 2. Environment Variables
+### 2. Azure App Registration & Service Principal
+
+**⚠️ REQUIRED**: You must create an Azure App Registration and configure it properly to access Azure AI Foundry services.
+
+#### Step 2.1: Create App Registration
+
+1. **Navigate to Azure Portal** → **Microsoft Entra ID** → **App registrations**
+2. **Click "New registration"**
+3. **Configure the registration**:
+   - **Name**: `CAHMS-GitHub-Actions` (or descriptive name)
+   - **Supported account types**: `Accounts in this organizational directory only`
+   - **Redirect URI**: Leave blank (service-to-service authentication)
+
+#### Step 2.2: Configure Authentication for GitHub Actions
+
+**For GitHub Actions (Recommended - OIDC):**
+1. Go to **Certificates & secrets** → **Federated credentials**
+2. Click **Add credential** → **GitHub Actions deploying Azure resources**
+3. Configure:
+   - **Organization**: `<YOUR ORGANISATION>`
+   - **Repository**: `cahms`
+   - **Entity type**: `Branch`
+   - **GitHub branch name**: `main`
+   - **Name**: `GitHub-Actions-Main`
+4. Repeat for `develop` branch if needed
+
+**Alternative - Client Secret (Less Secure):**
+1. Go to **Certificates & secrets** → **Client secrets**
+2. Click **New client secret**
+3. Set expiration (12-24 months recommended)
+4. **Copy the secret value immediately** (you won't see it again!)
+
+#### Step 2.3: Assign Azure AI Foundry Permissions
+
+The app registration needs access to Azure AI services through **Azure RBAC** (not API permissions):
+
+**For Azure OpenAI:**
+1. Navigate to your **Azure OpenAI resource**
+2. Go to **Access control (IAM)** → **Add role assignment**
+3. Assign role to your app registration:
+   - **Role**: `Cognitive Services OpenAI User` (recommended)
+   - **Assign access to**: User, group, or service principal
+   - **Select**: Search for your app registration name
+
+**For Azure AI Foundry/Projects:**
+1. Navigate to your **Azure AI Foundry project**
+2. Go to **Access control (IAM)** → **Add role assignment**
+3. Assign role to your app registration:
+   - **Role**: `Azure AI Developer` or `Contributor`
+   - **Select**: Your app registration
+
+**For Resource Group (if broader access needed):**
+1. Navigate to your **Resource Group** containing AI services
+2. Go to **Access control (IAM)** → **Add role assignment**
+3. Assign appropriate role (`Contributor` or specific service roles)
+
+#### Step 2.4: Collect Required Values
+
+After app registration setup, collect these values:
+
+```bash
+# From App Registration Overview page
+AZURE_CLIENT_ID=your_application_client_id
+AZURE_TENANT_ID=your_directory_tenant_id
+
+# From Azure Subscription
+AZURE_SUBSCRIPTION_ID=your_azure_subscription_id
+
+# From Azure OpenAI Resource
+LLM_ENDPOINT=https://your-openai-resource.openai.azure.com/
+LLM_API_KEY=your_openai_api_key
+LLM_MODEL_NAME=your_deployment_name  # e.g., "gpt-4"
+```
+
+### 3. Environment Variables
 
 Set the following environment variables:
 
@@ -59,7 +133,7 @@ AZURE_TENANT_ID=your_azure_tenant_id
 AZURE_SUBSCRIPTION_ID=your_azure_subscription_id
 ```
 
-### 3. Configuration
+### 4. Configuration
 
 Edit `configs/evaluation_config.json` to adjust evaluation settings:
 
@@ -89,7 +163,7 @@ The evaluation runs automatically on:
 
 The evaluation is integrated into the deployment pipeline:
 
-1. **Groundedness Evaluation** (`groundedness-evaluation.yml`)
+1. **Groundedness Evaluation** (`evaluate.yml`)
    - Runs on code changes
    - Evaluates all test cases
    - Posts results to PR comments
@@ -183,13 +257,32 @@ The overall evaluation passes if:
 
 ### Common Issues
 
-1. **Import Errors**: Ensure Azure AI SDK is installed
-2. **Authentication Errors**: Verify Azure credentials are set correctly
-3. **No Test Cases Found**: Check test document directory structure
-4. **Evaluation Timeout**: Increase timeout in evaluation settings
-5. **Low Scores**: Review generated reports vs. source documents
+1. **Authentication Errors**: 
+   - Verify app registration is created and configured
+   - Check that RBAC roles are assigned correctly
+   - Ensure federated credentials match your GitHub repository exactly
+   
+2. **Azure AI Foundry Access Denied**:
+   - Confirm app registration has `Azure AI Developer` role on the AI project
+   - Verify the Azure AI project and resources are in the correct subscription
+   
+3. **Import Errors**: Ensure Azure AI SDK is installed
+4. **No Test Cases Found**: Check test document directory structure
+5. **Evaluation Timeout**: Increase timeout in evaluation settings
+6. **Low Scores**: Review generated reports vs. source documents
 
-### Debugging
+### Debugging Authentication
+
+Test your app registration setup:
+
+```python
+from azure.identity import DefaultAzureCredential
+from azure.ai.projects import AIProjectClient
+
+# This should work without errors if setup is correct
+credential = DefaultAzureCredential()
+# Test with your AI project details
+```
 
 Enable detailed logging:
 
@@ -202,10 +295,10 @@ Check evaluation results in `evaluation_results.json` for detailed feedback.
 
 ## GitHub Secrets
 
-Configure these secrets in your repository:
+Configure these secrets in your GitHub repository (**Settings** → **Secrets and variables** → **Actions**):
 
-### For Evaluation
-- `AZURE_CLIENT_ID`: Service principal client ID
+### For Evaluation (Required)
+- `AZURE_CLIENT_ID`: App registration client ID
 - `AZURE_TENANT_ID`: Azure tenant ID  
 - `AZURE_SUBSCRIPTION_ID`: Azure subscription ID
 - `LLM_ENDPOINT`: Azure OpenAI endpoint
@@ -217,8 +310,18 @@ Configure these secrets in your repository:
 - `AZUREAPPSERVICE_TENANTID_*`: App service tenant ID
 - `AZUREAPPSERVICE_SUBSCRIPTIONID_*`: App service subscription ID
 
+**Security Note**: If using client secret instead of OIDC, also add:
+- `AZURE_CLIENT_SECRET`: App registration client secret
+
 ## Best Practices
 
+### Security
+1. **Use OIDC over client secrets** for GitHub Actions authentication
+2. **Principle of least privilege**: Only assign necessary RBAC roles
+3. **Regular rotation**: Rotate client secrets if using them (OIDC doesn't need rotation)
+4. **Monitor access**: Review Azure AD sign-in logs for the app registration
+
+### Evaluation Quality
 1. **Document Quality**: Use realistic, anonymized assessment documents
 2. **Test Coverage**: Include diverse cases representing common scenarios
 3. **Threshold Tuning**: Adjust thresholds based on acceptable quality levels
