@@ -110,7 +110,7 @@ jobs:
           PASS_RATE=$(python -c "import json; data=json.load(open('evaluation_results.json')); print(f\"{data['evaluation_summary']['pass_rate']:.1%}\")")
           AVG_GROUNDEDNESS=$(python -c "import json; data=json.load(open('evaluation_results.json')); print(f\"{data['evaluation_summary']['avg_groundedness_score']:.2f}\")")
           AVG_RELEVANCE=$(python -c "import json; data=json.load(open('evaluation_results.json')); print(f\"{data['evaluation_summary']['avg_relevance_score']:.2f}\")")
-          PASSED_THRESHOLD=$(python -c "import json; data=json.load(open('evaluation_results.json')); print(data['evaluation_summary']['passed_threshold'])")
+          PASSED_THRESHOLD=$(python -c "import json; data=json.load(open('evaluation_results.json')); print('true' if data['evaluation_summary']['passed_threshold'] else 'false')")
           
           echo "total_cases=$TOTAL_CASES" >> $GITHUB_OUTPUT
           echo "passed_cases=$PASSED_CASES" >> $GITHUB_OUTPUT
