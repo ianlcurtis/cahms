@@ -7,8 +7,8 @@
     "passed_threshold": true,
     "avg_groundedness_score": 5.0,
     "avg_relevance_score": 5.0,
-    "avg_generation_time_seconds": 16.319889500000002,
-    "evaluation_timestamp": "2025-07-23T12:42:04.327482",
+    "avg_generation_time_seconds": 18.4632435,
+    "evaluation_timestamp": "2025-07-24T18:18:35.202418",
     "thresholds": {
       "groundedness_threshold": 3.0,
       "relevance_threshold": 3.0,
@@ -20,20 +20,20 @@
       "case_id": "case_001",
       "groundedness_score": 5.0,
       "relevance_score": 5.0,
-      "response_length": 7351,
-      "evaluation_timestamp": "2025-07-23T12:41:43.768236",
+      "response_length": 7797,
+      "evaluation_timestamp": "2025-07-24T18:18:12.264846",
       "detailed_feedback": {
         "groundedness_details": {
           "groundedness": 5.0,
           "gpt_groundedness": 5.0,
-          "groundedness_reason": "The RESPONSE is fully grounded in the CONTEXT, accurately and comprehensively addressing the QUERY without omissions or extraneous information.",
+          "groundedness_reason": "The RESPONSE is fully grounded in the CONTEXT, accurately synthesizing the provided information into a comprehensive report that directly addresses the QUERY.",
           "groundedness_result": "pass",
           "groundedness_threshold": 3
         },
         "relevance_details": {
           "relevance": 5.0,
           "gpt_relevance": 5.0,
-          "relevance_reason": "The RESPONSE fully addresses the QUERY with accurate, complete, and detailed information, while also providing additional insights and elaboration that enhance its relevance and comprehensiveness.",
+          "relevance_reason": "The RESPONSE fully addresses the QUERY with accurate and complete information, and it also provides additional insights and elaboration, making it comprehensive and insightful.",
           "relevance_result": "pass",
           "relevance_threshold": 3
         },
@@ -45,27 +45,27 @@
         "document_count": 2
       },
       "passed_threshold": true,
-      "generation_time_seconds": 16.457759,
+      "generation_time_seconds": 19.485334,
       "error_message": null
     },
     {
       "case_id": "case_002",
       "groundedness_score": 5.0,
       "relevance_score": 5.0,
-      "response_length": 6823,
-      "evaluation_timestamp": "2025-07-23T12:42:04.327295",
+      "response_length": 7786,
+      "evaluation_timestamp": "2025-07-24T18:18:35.201879",
       "detailed_feedback": {
         "groundedness_details": {
           "groundedness": 5.0,
           "gpt_groundedness": 5.0,
-          "groundedness_reason": "The RESPONSE thoroughly and accurately addresses the QUERY, using all relevant details from the CONTEXT without introducing extraneous or incorrect information. It is fully grounded and complete.",
+          "groundedness_reason": "The RESPONSE is fully grounded in the CONTEXT, accurately and comprehensively addressing the QUERY without introducing unrelated or incorrect information.",
           "groundedness_result": "pass",
           "groundedness_threshold": 3
         },
         "relevance_details": {
           "relevance": 5.0,
           "gpt_relevance": 5.0,
-          "relevance_reason": "The RESPONSE fully addresses the QUERY with accurate, complete, and insightful information, making it highly relevant and comprehensive.",
+          "relevance_reason": "The RESPONSE fully addresses the QUERY with accurate and complete information, including additional insights and elaborations that enhance its relevance and comprehensiveness.",
           "relevance_result": "pass",
           "relevance_threshold": 3
         },
@@ -77,7 +77,7 @@
         "document_count": 2
       },
       "passed_threshold": true,
-      "generation_time_seconds": 16.18202,
+      "generation_time_seconds": 17.441153,
       "error_message": null
     }
   ],

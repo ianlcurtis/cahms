@@ -1,0 +1,47 @@
+{
+  "evaluationName": "CAHMS_Groundedness_Evaluation",
+  "description": "Groundedness evaluation run with 2 test cases",
+  "tags": {
+    "evaluation_type": "groundedness",
+    "model": "gpt-4o",
+    "pass_rate": "100.0%",
+    "framework": "CAHMS"
+  },
+  "properties": {
+    "total_cases": 2,
+    "passed_cases": 2,
+    "failed_cases": 0,
+    "avg_groundedness_score": 5.0,
+    "avg_relevance_score": 5.0,
+    "avg_generation_time": 18.4632435,
+    "groundedness_threshold": 3.0,
+    "relevance_threshold": 3.0,
+    "pass_rate_threshold": 0.8
+  },
+  "metrics": {
+    "groundedness_score": 5.0,
+    "relevance_score": 5.0,
+    "pass_rate": 1.0,
+    "generation_time_avg": 18.4632435
+  },
+  "case_results": [
+    {
+      "case_id": "case_001",
+      "groundedness_score": 5.0,
+      "relevance_score": 5.0,
+      "passed": true,
+      "generation_time": 19.485334,
+      "response_length": 7797,
+      "timestamp": "2025-07-24T18:18:12.264846"
+    },
+    {
+      "case_id": "case_002",
+      "groundedness_score": 5.0,
+      "relevance_score": 5.0,
+      "passed": true,
+      "generation_time": 17.441153,
+      "response_length": 7786,
+      "timestamp": "2025-07-24T18:18:35.201879"
+    }
+  ]
+}

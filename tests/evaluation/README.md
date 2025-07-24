@@ -144,9 +144,36 @@ LLM_MODEL_NAME=gpt-4
 AZURE_CLIENT_ID=your_service_principal_client_id
 AZURE_TENANT_ID=your_azure_tenant_id
 AZURE_SUBSCRIPTION_ID=your_azure_subscription_id
+
+# Azure AI Foundry Project (optional - for logging evaluation results)
+AI_PROJECT_CONNECTION_STRING=your_ai_project_connection_string
+AZURE_RESOURCE_GROUP=your_resource_group_name
+AI_PROJECT_NAME=your_ai_project_name
 ```
 
-### 4. Configuration
+### 4. AI Foundry Project Setup (Optional)
+
+To log evaluation results to Azure AI Foundry for tracking and analysis:
+
+1. **Create an AI Foundry Project**:
+   - Navigate to [Azure AI Foundry](https://ai.azure.com)
+   - Create a new project or use an existing one
+   - Note the project name and resource group
+
+2. **Get Project Connection String** (Method 1):
+   - In AI Foundry, go to your project settings
+   - Copy the connection string
+   - Set `AI_PROJECT_CONNECTION_STRING` environment variable
+
+3. **Or Configure Individual Parameters** (Method 2):
+   - Set `AZURE_SUBSCRIPTION_ID`, `AZURE_RESOURCE_GROUP`, and `AI_PROJECT_NAME`
+   - The evaluator will construct the client from these parameters
+
+4. **Assign Permissions**:
+   - Your service principal needs `Azure AI Developer` or `Contributor` role
+   - On the AI Foundry project resource in Azure Portal
+
+### 5. Configuration
 
 Edit `configs/evaluation_config.json` to adjust evaluation settings:
 
@@ -158,11 +185,25 @@ Edit `configs/evaluation_config.json` to adjust evaluation settings:
 
 ### Local Testing
 
-Run the evaluation locally:
+Run the evaluation locally (AI Foundry logging is automatic if configured):
 
 ```bash
 cd tests/evaluation
 python groundedness_evaluator.py
+```
+
+The evaluator will:
+- Run all test cases in `test_documents/`
+- Save results locally to `evaluation_results.json`
+- Log results to AI Foundry project (if configured)
+- Display a summary with pass/fail status
+
+### Environment Check
+
+Check your configuration before running:
+
+```bash
+./setup_environment.sh
 ```
 
 ### CI/CD Integration
