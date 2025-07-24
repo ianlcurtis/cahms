@@ -23,6 +23,10 @@ env:
 jobs:
   evaluate:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write        # Required for Azure federated identity authentication
+      contents: read         # Required to checkout repository
+      pull-requests: write   # Required to comment on pull requests
     
     steps:
     - name: Checkout repository
