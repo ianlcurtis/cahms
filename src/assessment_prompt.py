@@ -7,19 +7,6 @@ import os
 from typing import List, Any
 
 
-# Constants for fallback messages
-FALLBACK_SYSTEM_MESSAGE = "You are an expert clinician specializing in neurodevelopmental assessments for children and adolescents."
-FALLBACK_PROMPT_TEMPLATE = """You are a specialist clinician working with the CAMHS (Child and Adolescent Mental Health Services) Neurodevelopmental Team.
-
-Please analyze the provided assessment documents and generate a comprehensive neurodevelopmental assessment report.
-
-AVAILABLE DOCUMENTS:
-{document_content}
-
-Generate the assessment report now:
-"""
-
-
 class AssessmentPromptGenerator:
     """Generates prompts for neurodevelopmental assessment reports using template files"""
     
@@ -66,8 +53,8 @@ class AssessmentPromptGenerator:
             return formatted_prompt
             
         except Exception as e:
-            # Fallback to a basic prompt if template loading fails
-            return FALLBACK_PROMPT_TEMPLATE.format(document_content=document_content)
+            # TODO: Production - Add proper error handling and logging
+            raise RuntimeError(f"Failed to load prompt template from {self.prompt_template_path}: {str(e)}")
     
     def create_system_message(self) -> str:
         """
@@ -84,5 +71,5 @@ class AssessmentPromptGenerator:
             return system_message
                 
         except Exception as e:
-            # Fallback system message if template loading fails
-            return FALLBACK_SYSTEM_MESSAGE
+            # TODO: Production - Add proper error handling and logging
+            raise RuntimeError(f"Failed to load system message from {self.system_message_path}: {str(e)}")
