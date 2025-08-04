@@ -80,9 +80,12 @@ jobs:
         LLM_ENDPOINT: ${{ secrets.LLM_ENDPOINT }}
         LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
         LLM_MODEL_NAME: ${{ secrets.LLM_MODEL_NAME }}
+        USE_OPENAI_CLIENT: ${{ secrets.USE_OPENAI_CLIENT }}
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+        AI_PROJECT_NAME: ${{ secrets.AI_PROJECT_NAME }}
         PROJECT_ENDPOINT: ${{ secrets.PROJECT_ENDPOINT }}
         PYTHONPATH: ${{ github.workspace }}/src
       run: |
