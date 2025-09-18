@@ -1,5 +1,7 @@
 # CAHMS Groundedness Evaluation
 
+> **⚠️ DISCLAIMER: This is proof-of-concept code for demonstration purposes only. This software is not production-ready and comes with no warranties or guarantees. It should not be used in clinical or production environments without proper testing, validation, and security review. The authors accept no responsibility for any consequences arising from its use.**
+
 This directory contains the groundedness evaluation framework for the CAHMS neurodevelopmental assessment application. The evaluation uses Azure AI Foundry's evaluation SDK to assess whether generated reports are properly grounded in the provided source documents.
 
 ## Overview

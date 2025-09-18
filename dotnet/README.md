@@ -1,5 +1,7 @@
 # CAHMS Neurodevelopmental Assessment Tool (.NET)
 
+> **⚠️ DISCLAIMER: This is proof-of-concept code for demonstration purposes only. This software is not production-ready and comes with no warranties or guarantees. It should not be used in clinical or production environments without proper testing, validation, and security review. The authors accept no responsibility for any consequences arising from its use.**
+
 An ASP.NET Core MVC web application for generating neurodevelopmental assessment reports for Child and Adolescent Mental Health Services (CAHMS). This tool uses Azure OpenAI services and template-based prompts to analyze uploaded assessment documents and generate professional clinical reports.
 
 ![CAHMS UI Screenshot](../images/cahms_ui.png)

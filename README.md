@@ -1,5 +1,7 @@
 # CAHMS Neurodevelopmental Assessment Tool
 
+> **⚠️ DISCLAIMER: This is proof-of-concept code for demonstration purposes only. This software is not production-ready and comes with no warranties or guarantees. It should not be used in clinical or production environments without proper testing, validation, and security review. The authors accept no responsibility for any consequences arising from its use.**
+
 A comprehensive suite of applications for generating neurodevelopmental assessment reports for Child and Adolescent Mental Health Services (CAHMS). This project provides both Python and .NET implementations of an intelligent document processing system that uses Azure OpenAI to analyze clinical assessment documents and generate professional reports.
 
 ![CAHMS UI Screenshot](images/cahms_ui.png)
