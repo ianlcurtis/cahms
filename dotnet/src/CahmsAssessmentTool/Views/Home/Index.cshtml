@@ -1,0 +1,298 @@
+@model CahmsAssessmentTool.Models.FileUploadViewModel
+@{
+    ViewData["Title"] = "CAHMS Neurodevelopmental Assessment Tool";
+}
+
+<!-- Logo and Title Section -->
+<div class="row logo-title-section">
+    <div class="col-md-1">
+        <img src="~/images/azure_logo.png" alt="Azure Logo" style="width: 100px;" />
+    </div>
+    <div class="col-md-11">
+        <h1>CAHMS Neurodevelopmental Assessment Tool</h1>
+    </div>
+</div>
+
+<!-- File Upload Section -->
+<div class="row">
+    <div class="col-12">
+        <h2>Document Upload</h2>
+        <p>Please upload the required documents for neurodevelopmental assessment:</p>
+    </div>
+</div>
+
+<form id="assessmentForm" action="/Home/ProcessAssessment" method="post" enctype="multipart/form-data">
+    <!-- File Upload Fields in Two Columns -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-md-6">
+            <!-- Form S -->
+            <div class="file-upload-container">
+                <h5>@Model.FileConfigs["FormS"].DisplayName @(Model.FileConfigs["FormS"].IsMandatory ? "" : " (Optional)")</h5>
+                <p class="description">@Model.FileConfigs["FormS"].Description</p>
+                <input type="file" class="form-control" id="FormS" name="FormS" 
+                       accept=".pdf,.doc,.docx,.txt" 
+                       title="Upload @Model.FileConfigs["FormS"].DisplayName @(Model.FileConfigs["FormS"].IsMandatory ? "" : " (Optional)")" />
+            </div>
+
+            <!-- Form A -->
+            <div class="file-upload-container">
+                <h5>@Model.FileConfigs["FormA"].DisplayName @(Model.FileConfigs["FormA"].IsMandatory ? "" : " (Optional)")</h5>
+                <p class="description">@Model.FileConfigs["FormA"].Description</p>
+                <input type="file" class="form-control" id="FormA" name="FormA" 
+                       accept=".pdf,.doc,.docx,.txt" 
+                       title="Upload @Model.FileConfigs["FormA"].DisplayName @(Model.FileConfigs["FormA"].IsMandatory ? "" : " (Optional)")" />
+            </div>
+
+            <!-- Neuro Dev History -->
+            <div class="file-upload-container">
+                <h5>@Model.FileConfigs["NeuroDevHistory"].DisplayName @(Model.FileConfigs["NeuroDevHistory"].IsMandatory ? "" : " (Optional)")</h5>
+                <p class="description">@Model.FileConfigs["NeuroDevHistory"].Description</p>
+                <input type="file" class="form-control" id="NeuroDevHistory" name="NeuroDevHistory" 
+                       accept=".pdf,.doc,.docx,.txt" 
+                       title="Upload @Model.FileConfigs["NeuroDevHistory"].DisplayName @(Model.FileConfigs["NeuroDevHistory"].IsMandatory ? "" : " (Optional)")" />
+            </div>
+
+            <!-- Formulation Document -->
+            <div class="file-upload-container">
+                <h5>@Model.FileConfigs["FormulationDocument"].DisplayName @(Model.FileConfigs["FormulationDocument"].IsMandatory ? "" : " (Optional)")</h5>
+                <p class="description">@Model.FileConfigs["FormulationDocument"].Description</p>
+                <input type="file" class="form-control" id="FormulationDocument" name="FormulationDocument" 
+                       accept=".pdf,.doc,.docx,.txt" 
+                       title="Upload @Model.FileConfigs["FormulationDocument"].DisplayName @(Model.FileConfigs["FormulationDocument"].IsMandatory ? "" : " (Optional)")" />
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-md-6">
+            <!-- Form H -->
+            <div class="file-upload-container">
+                <h5>@Model.FileConfigs["FormH"].DisplayName @(Model.FileConfigs["FormH"].IsMandatory ? "" : " (Optional)")</h5>
+                <p class="description">@Model.FileConfigs["FormH"].Description</p>
+                <input type="file" class="form-control" id="FormH" name="FormH" 
+                       accept=".pdf,.doc,.docx,.txt" 
+                       title="Upload @Model.FileConfigs["FormH"].DisplayName @(Model.FileConfigs["FormH"].IsMandatory ? "" : " (Optional)")" />
+            </div>
+
+            <!-- CAHMS Initial Assessment -->
+            <div class="file-upload-container">
+                <h5>@Model.FileConfigs["CahmsInitial"].DisplayName @(Model.FileConfigs["CahmsInitial"].IsMandatory ? "" : " (Optional)")</h5>
+                <p class="description">@Model.FileConfigs["CahmsInitial"].Description</p>
+                <input type="file" class="form-control" id="CahmsInitial" name="CahmsInitial" 
+                       accept=".pdf,.doc,.docx,.txt" 
+                       title="Upload @Model.FileConfigs["CahmsInitial"].DisplayName @(Model.FileConfigs["CahmsInitial"].IsMandatory ? "" : " (Optional)")" />
+            </div>
+
+            <!-- School Observation -->
+            <div class="file-upload-container">
+                <h5>@Model.FileConfigs["SchoolObservation"].DisplayName @(Model.FileConfigs["SchoolObservation"].IsMandatory ? "" : " (Optional)")</h5>
+                <p class="description">@Model.FileConfigs["SchoolObservation"].Description</p>
+                <input type="file" class="form-control" id="SchoolObservation" name="SchoolObservation" 
+                       accept=".pdf,.doc,.docx,.txt" 
+                       title="Upload @Model.FileConfigs["SchoolObservation"].DisplayName @(Model.FileConfigs["SchoolObservation"].IsMandatory ? "" : " (Optional)")" />
+            </div>
+
+            <!-- Supporting Information -->
+            <div class="file-upload-container">
+                <h5>@Model.FileConfigs["SupportingInformation"].DisplayName @(Model.FileConfigs["SupportingInformation"].IsMandatory ? "" : " (Optional)")</h5>
+                <p class="description">@Model.FileConfigs["SupportingInformation"].Description</p>
+                <input type="file" class="form-control" id="SupportingInformation" name="SupportingInformation" 
+                       accept=".pdf,.doc,.docx,.txt" 
+                       title="Upload @Model.FileConfigs["SupportingInformation"].DisplayName @(Model.FileConfigs["SupportingInformation"].IsMandatory ? "" : " (Optional)")" />
+            </div>
+        </div>
+    </div>
+
+<!-- Upload Status Section -->
+<div class="upload-status">
+    <h3>Upload Status</h3>
+    
+    <!-- Debug Information -->
+    <div class="mb-3">
+        <small class="text-muted">Debug: Mandatory files: 
+            @string.Join(", ", Model.FileConfigs.Where(kv => kv.Value.IsMandatory).Select(kv => kv.Key))
+        </small>
+    </div>
+    
+    <!-- Required Documents Status -->
+    <div class="mb-3">
+        <strong>Required Documents:</strong>
+        <div id="requiredStatus">
+            @foreach (var config in Model.FileConfigs.Where(kv => kv.Value.IsMandatory))
+            {
+                <span class="status-item status-missing" id="status-@config.Key">
+                    ❌ @config.Value.DisplayName
+                </span>
+            }
+        </div>
+    </div>
+
+    <!-- Optional Documents Status -->
+    <div class="mb-3">
+        <strong>Optional Documents:</strong>
+        <div id="optionalStatus">
+            @foreach (var config in Model.FileConfigs.Where(kv => !kv.Value.IsMandatory))
+            {
+                <span class="status-item status-optional" id="status-@config.Key">
+                    ⚪ @config.Value.DisplayName (Optional)
+                </span>
+            }
+        </div>
+    </div>
+</div>    <!-- Generate Button -->
+    <div class="generate-button-container">
+        <button type="submit" class="btn btn-primary btn-lg" id="generateButton" style="width: 300px;">
+            <span id="buttonText">Generate Neurodevelopmental Assessment Report</span>
+            <span id="spinner" class="spinner-border spinner-border-sm ms-2" style="display: none;"></span>
+        </button>
+        <div id="errorMessage" class="text-danger mt-2" style="display: none;"></div>
+        <div id="processingMessage" class="text-info mt-2" style="display: none;">
+            <small>Please wait while we process your documents and generate the assessment report...</small>
+        </div>
+    </div>
+</form>
+
+<script>
+// Simplified JavaScript for file upload status and button management
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== CAHMS Page Loaded ===');
+    
+    // Get form elements
+    const form = document.getElementById('assessmentForm');
+    const generateButton = document.getElementById('generateButton');
+    const buttonText = document.getElementById('buttonText');
+    const spinner = document.getElementById('spinner');
+    
+    if (!form || !generateButton) {
+        console.error('Critical elements not found');
+        return;
+    }
+    
+    // Define the file inputs and their status elements
+    const fileConfig = {
+        'FormS': { mandatory: true, displayName: 'Form S' },
+        'FormH': { mandatory: false, displayName: 'Form H' },
+        'FormA': { mandatory: false, displayName: 'Form A' },
+        'CahmsInitial': { mandatory: false, displayName: 'CAHMS Initial Assessment Document' },
+        'NeuroDevHistory': { mandatory: false, displayName: 'Neuro Dev History' },
+        'FormulationDocument': { mandatory: false, displayName: 'Formulation Document' },
+        'SchoolObservation': { mandatory: false, displayName: 'School Observation' },
+        'SupportingInformation': { mandatory: false, displayName: 'Supporting Information' }
+    };
+    
+    // Function to update file status display
+    function updateFileStatus(fileKey, hasFile) {
+        const statusElement = document.getElementById('status-' + fileKey);
+        const config = fileConfig[fileKey];
+        
+        if (statusElement && config) {
+            statusElement.className = 'status-item';
+            
+            if (hasFile) {
+                statusElement.className += ' status-uploaded';
+                statusElement.textContent = '✅ ' + config.displayName;
+            } else if (config.mandatory) {
+                statusElement.className += ' status-missing';
+                statusElement.textContent = '❌ ' + config.displayName;
+            } else {
+                statusElement.className += ' status-optional';
+                statusElement.textContent = '⚪ ' + config.displayName + ' (Optional)';
+            }
+            
+            console.log('Updated status for', fileKey, 'to', statusElement.textContent);
+        }
+    }
+    
+    // Function to check if all mandatory files are uploaded
+    function checkMandatoryFiles() {
+        const mandatoryKeys = Object.keys(fileConfig).filter(key => fileConfig[key].mandatory);
+        
+        for (let key of mandatoryKeys) {
+            const input = document.getElementById(key);
+            if (!input || input.files.length === 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // Function to update the generate button state
+    function updateGenerateButton() {
+        const allMandatoryUploaded = checkMandatoryFiles();
+        generateButton.disabled = !allMandatoryUploaded;
+        
+        const errorMessage = document.getElementById('errorMessage');
+        if (errorMessage) {
+            if (allMandatoryUploaded) {
+                errorMessage.style.display = 'none';
+            } else {
+                errorMessage.textContent = 'Please upload all required documents before generating the report.';
+                errorMessage.style.display = 'block';
+            }
+        }
+    }
+    
+    // Add event listeners to all file inputs
+    Object.keys(fileConfig).forEach(function(key) {
+        const input = document.getElementById(key);
+        if (input) {
+            console.log('Adding listener for', key);
+            
+            input.addEventListener('change', function() {
+                const hasFile = this.files.length > 0;
+                console.log('File changed:', key, 'hasFile:', hasFile);
+                if (hasFile) {
+                    console.log('File name:', this.files[0].name);
+                }
+                
+                updateFileStatus(key, hasFile);
+                updateGenerateButton();
+            });
+            
+            // Initialize status
+            updateFileStatus(key, input.files.length > 0);
+        } else {
+            console.error('File input not found:', key);
+        }
+    });
+    
+    // Form submission handler
+    form.addEventListener('submit', function(e) {
+        console.log('Form submission attempted');
+        
+        if (!checkMandatoryFiles()) {
+            e.preventDefault();
+            console.log('Prevented submission - missing mandatory files');
+            return false;
+        }
+        
+        if (generateButton.disabled) {
+            e.preventDefault();
+            console.log('Prevented submission - button already disabled');
+            return false;
+        }
+        
+        // Set loading state
+        console.log('Setting loading state');
+        generateButton.disabled = true;
+        buttonText.textContent = 'Generating report... Please wait...';
+        if (spinner) {
+            spinner.style.display = 'inline-block';
+        }
+        
+        // Visual feedback
+        generateButton.style.opacity = '0.6';
+        
+        const processingMessage = document.getElementById('processingMessage');
+        if (processingMessage) {
+            processingMessage.style.display = 'block';
+        }
+        
+        return true;
+    });
+    
+    // Initial setup
+    updateGenerateButton();
+    console.log('=== JavaScript initialization complete ===');
+});
+</script>

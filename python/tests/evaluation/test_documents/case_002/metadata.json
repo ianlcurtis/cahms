@@ -1,0 +1,44 @@
+{
+  "case_id": "case_002", 
+  "description": "8-year-old with suspected autism spectrum disorder showing social communication difficulties",
+  "demographics": {
+    "age": 8,
+    "gender": "female",
+    "school_year": "Year 3"
+  },
+  "presenting_concerns": [
+    "Social interaction challenges",
+    "Communication difficulties",
+    "Repetitive behaviors and restricted interests",
+    "Sensory sensitivities"
+  ],
+  "expected_assessment_areas": [
+    "social communication skills",
+    "repetitive behaviors and restricted interests",
+    "sensory processing",
+    "autism diagnostic criteria",
+    "adaptive functioning"
+  ],
+  "key_documents": [
+    "form_s.pdf",
+    "form_a.pdf"
+  ],
+  "evaluation_criteria": {
+    "must_reference_documents": true,
+    "must_include_recommendations": true,
+    "must_address_presenting_concerns": true,
+    "must_include_diagnostic_considerations": true,
+    "expected_sections": [
+      "Background Information",
+      "Assessment Findings",
+      "Diagnostic Impressions", 
+      "Recommendations"
+    ]
+  },
+  "groundedness_requirements": [
+    "All observations must be supported by form content",
+    "Diagnostic considerations must reference specific behaviors documented",
+    "Recommendations must address documented needs and challenges",
+    "No assumptions should be made beyond what is documented"
+  ]
+}

@@ -1,0 +1,192 @@
+@model CahmsAssessmentTool.Models.AssessmentResultViewModel
+@{
+    ViewData["Title"] = "Assessment Result";
+}
+
+<div class="row">
+    <div class="col-12">
+        @if (Model.IsSuccess)
+        {
+            <div class="alert alert-success" role="alert">
+                <h4 class="alert-heading">Assessment Generated Successfully!</h4>
+                <p>Generated at: @Model.GeneratedAt.ToString("yyyy-MM-dd HH:mm:ss UTC")</p>
+            </div>
+
+            <!-- Report Metadata -->
+            @if (Model.Metadata != null)
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#metadataCollapse">
+                                Report Metadata
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="metadataCollapse" class="collapse">
+                        <div class="card-body">
+                            <div class="row metadata-container">
+                                <div class="col-md-4">
+                                    <div class="metric-label">Documents Processed</div>
+                                    <div class="metric-value">@(Model.Metadata.DocumentsProcessed)</div>
+                                    <div class="metric-label">Required Documents</div>
+                                    <div class="metric-value">@(Model.Metadata.RequiredDocuments)</div>
+                                    <div class="metric-label">Optional Documents</div>
+                                    <div class="metric-value">@(Model.Metadata.OptionalDocuments)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="metric-label">Model Used</div>
+                                    <div class="metric-value">@(Model.Metadata.ModelUsed ?? "N/A")</div>
+                                    <div class="metric-label">Generation Time</div>
+                                    <div class="metric-value">@(Model.Metadata.GenerationTimeFormatted ?? "N/A")</div>
+                                    <div class="metric-label">Total Tokens</div>
+                                    <div class="metric-value">@(Model.Metadata.TotalTokens?.ToString() ?? "N/A")</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="metric-label">Prompt Tokens</div>
+                                    <div class="metric-value">@(Model.Metadata.PromptTokens?.ToString() ?? "N/A")</div>
+                                    <div class="metric-label">Response Tokens</div>
+                                    <div class="metric-value">@(Model.Metadata.CompletionTokens?.ToString() ?? "N/A")</div>
+                                    <div class="metric-label">Generated</div>
+                                    <div class="metric-value">@Model.Metadata.GenerationTimestamp.ToString("yyyy-MM-dd HH:mm:ss")</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Assessment Report Display -->
+            <h2>Generated Assessment Report</h2>
+            <div class="row">
+                <div class="col-md-9">
+                    <div class="report-container">
+                        @Html.Raw(Html.Encode(Model.AssessmentContent).Replace("\n", "<br />"))
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <!-- Download Button -->
+                    <button class="btn btn-secondary btn-sm w-100 mb-2" onclick="downloadReport()">
+                        Download Report
+                    </button>
+
+                    <!-- Additional Options -->
+                    <hr>
+                    <h6><strong>Additional Options:</strong></h6>
+
+                    <!-- Copy to Clipboard -->
+                    <button class="btn btn-outline-primary btn-sm w-100 mb-2" onclick="copyToClipboard()">
+                        Copy to Clipboard
+                    </button>
+
+                    <!-- Print View -->
+                    <button class="btn btn-outline-secondary btn-sm w-100 mb-2" onclick="printReport()">
+                        Print View
+                    </button>
+
+                    <!-- Status Messages -->
+                    <div id="copyStatus" class="alert alert-success alert-sm" style="display: none; margin-top: 10px;">
+                        Report copied to clipboard!
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Error Processing Assessment</h4>
+                <p>@Model.ErrorMessage</p>
+            </div>
+        }
+        
+        <div class="mt-3">
+            <a href="/" class="btn btn-primary">Generate Another Assessment</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function downloadReport() {
+    const content = @Html.Raw(Json.Serialize(Model.AssessmentContent));
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '').replace(/-/g, '').replace('T', '_');
+    const filename = `CAHMS_Assessment_Report_${timestamp}.txt`;
+    
+    const element = document.createElement('a');
+    const file = new Blob([content], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = filename;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
+
+function copyToClipboard() {
+    const content = @Html.Raw(Json.Serialize(Model.AssessmentContent));
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(content).then(function() {
+            showCopyStatus();
+        }).catch(function(err) {
+            console.error('Could not copy text: ', err);
+            fallbackCopyTextToClipboard(content);
+        });
+    } else {
+        fallbackCopyTextToClipboard(content);
+    }
+}
+
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showCopyStatus();
+        }
+    } catch (err) {
+        console.error('Fallback: Could not copy text: ', err);
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+function showCopyStatus() {
+    const status = document.getElementById('copyStatus');
+    status.style.display = 'block';
+    setTimeout(() => {
+        status.style.display = 'none';
+    }, 3000);
+}
+
+function printReport() {
+    const content = @Html.Raw(Json.Serialize(Model.AssessmentContent));
+    const currentTime = new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+    
+    const printWindow = window.open('', '', 'height=600,width=800');
+    printWindow.document.write('<html><head><title>CAHMS Assessment Report</title>');
+    printWindow.document.write('<style>body{font-family: Arial, sans-serif; line-height: 1.6; margin: 40px;}</style>');
+    printWindow.document.write('</head><body>');
+    printWindow.document.write('<h1>CAHMS Neurodevelopmental Assessment Report</h1>');
+    printWindow.document.write('<p><strong>Generated:</strong> ' + currentTime + '</p>');
+    printWindow.document.write('<hr>');
+    printWindow.document.write('<pre style="white-space: pre-wrap; font-family: Arial, sans-serif;">' + content + '</pre>');
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+}
+</script>
